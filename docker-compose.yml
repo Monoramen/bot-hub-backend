@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  database:
+    image: postgres
+    ports:
+      - "5001:5432"
+    restart: always
+    environment:
+      POSTGRES_DB: personal_bot_hub_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres-personal-bot-hub:/var/lib/postgresql/data
+    networks:
+      - bot-network
+
+volumes:
+  postgres-personal-bot-hub:
+    name: postgres-personal-bot-hub
+
+networks:
+  bot-network:
+    name: bot-network

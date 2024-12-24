@@ -1,0 +1,26 @@
+package com.monora.personalbothub.bot_db.entity;
+
+
+import jakarta.persistence.*;
+import lombok.*;
+
+@Entity
+@Table(name = "command")
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString
+public class CommandEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "command",nullable = false)
+    private String command;
+
+    @Column(name = "response")
+    private String response;
+
+
+}

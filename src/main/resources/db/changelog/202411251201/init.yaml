@@ -1,0 +1,5 @@
+databaseChangeLog:
+  - changeSet:
+      id: initial-setup
+      author: Monoramen
+      changes: []
