@@ -1,25 +1,36 @@
 package com.monora.personalbothub.bot_impl.util;
 
+import com.monora.personalbothub.bot_api.dto.CommandDto;
+import com.monora.personalbothub.bot_db.entity.CommandEntity;
+import com.monora.personalbothub.bot_impl.mapper.CommandMapper;
+import com.monora.personalbothub.bot_impl.service.CommandService;
 import com.pengrad.telegrambot.Callback;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.model.request.*;
 import com.pengrad.telegrambot.request.GetUpdates;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.pengrad.telegrambot.response.GetUpdatesResponse;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.List;
 
 @Component
+@Slf4j
 public class TelegramBotUpdater {
 
+    private final CommandService commandService;
     private final TelegramBot telegramBot;
-    private int offset = 2; // Значение по умолчанию для offset
+    private final CommandMapper commandMapper;
+    private int offset = 0; // Значение по умолчанию для offset
 
-    public TelegramBotUpdater(TelegramBot telegramBot) {
+    public TelegramBotUpdater(TelegramBot telegramBot, CommandService commandService, CommandMapper commandMapper) {
         this.telegramBot = telegramBot;
+        this.commandService = commandService;
+        this.commandMapper = commandMapper;
     }
 
     @PostConstruct
@@ -49,22 +60,7 @@ public class TelegramBotUpdater {
             @Override
             public void onResponse(GetUpdates request, GetUpdatesResponse response) {
                 List<Update> updates = response.updates();
-
-                if (updates != null) { // Проверяем, что updates не null
-                    updates.forEach(update -> {
-                        if (update.message() != null && update.message().text() != null) {
-                            String chatId = update.message().chat().id().toString();
-                            String text = update.message().text();
-
-                            telegramBot.execute(new SendMessage(chatId, "Вы сказали: " + text));
-
-                            // Обновляем offset
-                            offset = update.updateId() + 1;
-                        }
-                    });
-                } else {
-                    System.out.println("Нет новых обновлений.");
-                }
+                updateListener(updates);
             }
 
             @Override
@@ -73,4 +69,52 @@ public class TelegramBotUpdater {
             }
         });
     }
+
+
+    private void updateListener(List<Update> updates) {
+        if (updates != null) { // Проверяем, что updates не null
+            updates.forEach(update -> {
+                if (update.message() != null && update.message().text() != null) {
+                    String chatId = update.message().chat().id().toString();
+                    String text = update.message().text();
+
+                    Keyboard keyboard = new ReplyKeyboardMarkup(
+                            new KeyboardButton[]{
+                                    new KeyboardButton("text"),
+                                    new KeyboardButton("contact").requestContact(true),
+                                    new KeyboardButton("location").requestLocation(true)
+                            }
+                    );
+                    InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
+                            new InlineKeyboardButton[]{
+                                    new InlineKeyboardButton("url").url("www.google.com"),
+                                    new InlineKeyboardButton("callback_data").callbackData("callback_data"),
+                                    new InlineKeyboardButton("Switch!").switchInlineQuery("switch_inline_query")
+                            });
+                    SendMessage request = new SendMessage(chatId, getCommand(text))
+                            .parseMode(ParseMode.HTML)
+                            .disableWebPagePreview(true)
+                            .disableNotification(true)
+                            .replyMarkup(inlineKeyboard);
+
+                    telegramBot.execute(request);
+
+                    log.info(update.message().text());
+                    // Обновляем offset
+                    offset = update.updateId() + 1;
+                }
+            });
+        } else {
+            log.info("Update list is empty");
+        }
+    }
+
+    public String getCommand(String command) {
+        CommandEntity commandEntity = commandService.findCommand(command);
+        log.info(commandEntity.getResponse().toString());
+        return commandEntity.getResponse();
+    }
+
+
+
 }

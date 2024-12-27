@@ -24,8 +24,11 @@ public class InlineButtonEntity {
     @Column(name = "callback_data")
     private String callbackData;
 
-    @Column(name = "login_url")
-    private String loginUrl;
+    @Column(name = "switch_inline_query")
+    private String switchInlineQuery;
 
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "keyboard_id") // Foreign key column in inline_button table
+    private InlineKeyboardEntity inlineKeyboard; // Reference to the parent keyboard
 }
