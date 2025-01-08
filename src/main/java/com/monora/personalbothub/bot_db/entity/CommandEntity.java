@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -34,4 +35,7 @@ public class CommandEntity {
             inverseJoinColumns = @JoinColumn(name = "inline_keyboard_id")
     )
     private Set<InlineKeyboardEntity> inlineKeyboards = new HashSet<>();
+
+
+
 }

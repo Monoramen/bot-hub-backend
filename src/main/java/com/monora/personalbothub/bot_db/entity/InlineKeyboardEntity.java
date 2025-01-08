@@ -35,4 +35,7 @@ public class InlineKeyboardEntity {
     )
     private List<InlineButtonEntity> buttons;
 
+
+    @ManyToMany(mappedBy = "inlineKeyboards")
+    private List<CommandEntity> commands;
 }

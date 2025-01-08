@@ -12,5 +12,5 @@ import java.util.List;
 @Repository
 public interface InlineButtonRepository extends JpaRepository<InlineButtonEntity, Long> {
     @Query("SELECT button FROM InlineButtonEntity button JOIN FETCH button.inlineKeyboards k WHERE k.id = :inlineKeyboardId")
-    List<InlineButtonEntity> findAllByInlineKeyboardId(@Param("inlineKeyboardId") int inlineKeyboardId);
+    List<InlineButtonEntity> findAllByInlineKeyboardId(@Param("inlineKeyboardId") Long inlineKeyboardId);
 }

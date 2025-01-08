@@ -30,6 +30,7 @@ public class InlineButtonEntity {
     @Column(name = "switch_inline_query")
     private String switchInlineQuery;
 
+
     @ManyToMany(mappedBy = "buttons")
     private List<InlineKeyboardEntity> inlineKeyboards;
 }

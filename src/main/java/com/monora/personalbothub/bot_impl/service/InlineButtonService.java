@@ -9,7 +9,7 @@ public interface InlineButtonService {
 
     void addInlineButton(InlineButtonEntity inlineButton);
 
-    InlineKeyboardButton[] getInlineButtonRowByKeyboardId(int inlineKeyboardId);
+    InlineKeyboardButton[] getInlineButtonRowByKeyboardId(Long inlineKeyboardId);
 
 
 

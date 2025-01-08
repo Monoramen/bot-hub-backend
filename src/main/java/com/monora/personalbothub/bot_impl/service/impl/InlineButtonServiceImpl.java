@@ -17,13 +17,14 @@ public class InlineButtonServiceImpl implements InlineButtonService {
 
     private final InlineButtonRepository inlineButtonRepository;
 
+
     @Override
     public void addInlineButton(InlineButtonEntity inlineButton) {
 
     }
 
     @Override
-    public InlineKeyboardButton[] getInlineButtonRowByKeyboardId(int inlineKeyboardId) {
+    public InlineKeyboardButton[] getInlineButtonRowByKeyboardId(Long inlineKeyboardId) {
         List<InlineButtonEntity> buttons = inlineButtonRepository.findAllByInlineKeyboardId(inlineKeyboardId);
 
         InlineKeyboardButton[] buttonRow = new InlineKeyboardButton[buttons.size()];
