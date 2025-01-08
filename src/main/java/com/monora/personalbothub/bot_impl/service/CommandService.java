@@ -6,5 +6,7 @@ public interface CommandService {
 
     CommandEntity  findCommand(String command);
 
+    void addCommand(CommandEntity command);
+
 
 }

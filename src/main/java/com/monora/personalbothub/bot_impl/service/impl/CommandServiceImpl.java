@@ -21,4 +21,10 @@ public class CommandServiceImpl implements CommandService {
     public CommandEntity findCommand(String command) {
         return commandRepository.findByCommand(command);
     }
+
+    @Override
+    public void addCommand(CommandEntity command) {
+
+    }
+
 }

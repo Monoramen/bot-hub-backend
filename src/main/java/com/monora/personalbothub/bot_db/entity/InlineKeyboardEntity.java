@@ -24,6 +24,15 @@ public class InlineKeyboardEntity {
     @Column(name = "inline_keyboard_name", nullable = false, unique = true)
     private String inlineKeyboardName;
 
-    @OneToMany(mappedBy = "inlineKeyboard", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+
+    @ManyToMany (cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    })
+    @JoinTable(name = "inline_keyboard_button",
+            joinColumns = @JoinColumn(name = "inline_keyboard_id"),
+            inverseJoinColumns = @JoinColumn(name = "inline_button_id")
+    )
     private List<InlineButtonEntity> buttons;
+
 }

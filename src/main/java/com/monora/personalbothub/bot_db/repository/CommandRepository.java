@@ -13,4 +13,5 @@ public interface CommandRepository extends JpaRepository<CommandEntity, Long> {
     List<CommandEntity> findAll();
 
 
+
 }

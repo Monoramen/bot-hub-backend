@@ -3,6 +3,8 @@ package com.monora.personalbothub.bot_db.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "inline_button")
 @NoArgsConstructor
@@ -10,6 +12,7 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
+@ToString
 public class InlineButtonEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,8 +30,6 @@ public class InlineButtonEntity {
     @Column(name = "switch_inline_query")
     private String switchInlineQuery;
 
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "keyboard_id") // Foreign key column in inline_button table
-    private InlineKeyboardEntity inlineKeyboard; // Reference to the parent keyboard
+    @ManyToMany(mappedBy = "buttons")
+    private List<InlineKeyboardEntity> inlineKeyboards;
 }
