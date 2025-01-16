@@ -1,5 +1,6 @@
 package com.monora.personalbothub.bot_impl.service.impl;
 
+import com.monora.personalbothub.bot_api.dto.InlineButtonDto;
 import com.monora.personalbothub.bot_db.entity.InlineButtonEntity;
 import com.monora.personalbothub.bot_db.repository.InlineButtonRepository;
 import com.monora.personalbothub.bot_impl.service.InlineButtonService;
@@ -19,13 +20,23 @@ public class InlineButtonServiceImpl implements InlineButtonService {
 
 
     @Override
-    public void addInlineButton(InlineButtonEntity inlineButton) {
+    public void addInlineButton(InlineButtonDto inlineButtonDto) {
+
+    }
+
+    @Override
+    public void updateInlineButton(InlineButtonDto inlineButtonDto) {
 
     }
 
     @Override
     public InlineKeyboardButton[] getInlineButtonRowByKeyboardId(Long inlineKeyboardId) {
         List<InlineButtonEntity> buttons = inlineButtonRepository.findAllByInlineKeyboardId(inlineKeyboardId);
+
+        // Проверяем, есть ли кнопки
+        if (buttons.isEmpty()) {
+            return new InlineKeyboardButton[0]; // Возвращаем пустой массив, если кнопок нет
+        }
 
         InlineKeyboardButton[] buttonRow = new InlineKeyboardButton[buttons.size()];
 
@@ -43,9 +54,9 @@ public class InlineButtonServiceImpl implements InlineButtonService {
 
             buttonRow[i] = inlineKeyboardButton; // Присваиваем созданный объект в массив
         }
-
         return buttonRow;
     }
+
 
 
 }

@@ -26,8 +26,11 @@ public class MessageHandler implements UpdateHandler {
             String text = update.message().text();
             String responseText = getCommand(text).getResponse();
             var inlineKeyboard = inlineKeyboardService.getInlineKeyboardByCommandId(getCommand(text).getId());
+            SendMessage request = new SendMessage(chatId, responseText);
+            if (inlineKeyboard != null) {
+                request.replyMarkup(inlineKeyboard);
+            }
 
-            SendMessage request = new SendMessage(chatId, responseText).replyMarkup(inlineKeyboard);
             telegramBot.execute(request);
             log.info("Handled message: {}", text);
         }

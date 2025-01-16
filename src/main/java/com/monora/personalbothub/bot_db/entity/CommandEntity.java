@@ -36,6 +36,4 @@ public class CommandEntity {
     )
     private Set<InlineKeyboardEntity> inlineKeyboards = new HashSet<>();
 
-
-
 }

@@ -9,4 +9,6 @@ public interface InlineKeyboardService {
 
     InlineKeyboardMarkup getInlineKeyboardByCommandId(Long commandId);
 
+    List<InlineKeyboardEntity> findAll();
+
 }

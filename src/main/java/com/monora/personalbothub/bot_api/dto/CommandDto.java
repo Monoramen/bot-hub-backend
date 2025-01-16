@@ -13,7 +13,7 @@ public record CommandDto(
         @NotNull
         String command,
         String response,
-        List<InlineButtonDto> buttons
+        List<InlineKeyboardDto> inlineKeyboards
 ) {
 
 }

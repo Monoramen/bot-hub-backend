@@ -8,10 +8,9 @@ import java.util.List;
 
 @Repository
 public interface CommandRepository extends JpaRepository<CommandEntity, Long> {
+
     CommandEntity findByCommand(String command);
 
     List<CommandEntity> findAll();
-
-
 
 }

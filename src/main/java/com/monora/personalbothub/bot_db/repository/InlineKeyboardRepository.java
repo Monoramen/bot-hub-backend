@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -14,4 +15,6 @@ public interface InlineKeyboardRepository extends JpaRepository<InlineKeyboardEn
 
     @Query("SELECT inlinekb FROM InlineKeyboardEntity inlinekb JOIN FETCH inlinekb.commands c WHERE c.id = :commandId")
     InlineKeyboardEntity findByCommandId(@Param("commandId") Long commandId);
+
+    List<InlineKeyboardEntity> findAll();
 }
