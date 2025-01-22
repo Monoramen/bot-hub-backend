@@ -19,3 +19,9 @@ INSERT INTO inline_keyboard_button (inline_keyboard_id, inline_button_id) VALUES
 
 INSERT INTO command_inline_keyboard(command_id, inline_keyboard_id) VALUES
     (1, 1);
+
+UPDATE command
+SET inline_keyboard_id = 1
+WHERE id = 1;
+
+SELECT * FROM command WHERE command = '/start';

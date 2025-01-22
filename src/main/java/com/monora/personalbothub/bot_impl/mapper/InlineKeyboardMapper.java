@@ -1,19 +1,21 @@
 package com.monora.personalbothub.bot_impl.mapper;
 
-import com.monora.personalbothub.bot_api.dto.CommandDto;
-import com.monora.personalbothub.bot_api.dto.InlineKeyboardDto;
-import com.monora.personalbothub.bot_db.entity.CommandEntity;
+import com.monora.personalbothub.bot_api.dto.request.InlineKeyboardRequestDTO;
+import com.monora.personalbothub.bot_api.dto.response.InlineKeyboardResponseDTO;
 import com.monora.personalbothub.bot_db.entity.InlineKeyboardEntity;
 import org.mapstruct.Mapper;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {InlineButtonMapper.class})
 public interface InlineKeyboardMapper {
 
-    InlineKeyboardEntity toEntity(InlineKeyboardDto inlineKeyboardDto);
+    // Маппинг запроса в сущность
+    InlineKeyboardEntity toEntity(InlineKeyboardRequestDTO inlineKeyboardRequestDTO);
 
-    InlineKeyboardDto toDto(InlineKeyboardEntity inlineKeyboardEntity);
+    // Маппинг сущности в ответ
+    InlineKeyboardResponseDTO toResponse(InlineKeyboardEntity inlineKeyboardEntity);
 
-    List<InlineKeyboardDto> toDtoList(List<InlineKeyboardEntity> inlineKeyboardEntities);
+    // Маппинг списка сущностей в список ответов
+    List<InlineKeyboardResponseDTO> toResponseList(List<InlineKeyboardEntity> inlineKeyboardEntities);
 }

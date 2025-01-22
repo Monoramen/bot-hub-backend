@@ -4,8 +4,6 @@ package com.monora.personalbothub.bot_db.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -26,14 +24,9 @@ public class CommandEntity {
     @Column(name = "response")
     private String response;
 
-    @ManyToMany(cascade = {
-            CascadeType.PERSIST,
-            CascadeType.MERGE
-    })
-    @JoinTable(name = "command_inline_keyboard",
-            joinColumns = @JoinColumn(name = "command_id"),
-            inverseJoinColumns = @JoinColumn(name = "inline_keyboard_id")
-    )
-    private Set<InlineKeyboardEntity> inlineKeyboards = new HashSet<>();
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinColumn(name = "inline_keyboard_id", referencedColumnName = "id")
+    private InlineKeyboardEntity inlineKeyboard;
+
 
 }

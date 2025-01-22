@@ -1,8 +1,14 @@
 package com.monora.personalbothub.bot_impl.service.impl;
 
-import com.monora.personalbothub.bot_api.dto.CommandDto;
+
+import com.monora.personalbothub.bot_api.dto.request.CommandRequestDTO;
+import com.monora.personalbothub.bot_api.dto.response.CommandResponseDTO;
+import com.monora.personalbothub.bot_api.exception.ApiErrorType;
+import com.monora.personalbothub.bot_api.exception.ApiException;
 import com.monora.personalbothub.bot_db.entity.CommandEntity;
+import com.monora.personalbothub.bot_db.entity.InlineKeyboardEntity;
 import com.monora.personalbothub.bot_db.repository.CommandRepository;
+import com.monora.personalbothub.bot_db.repository.InlineKeyboardRepository;
 import com.monora.personalbothub.bot_impl.mapper.CommandMapper;
 import com.monora.personalbothub.bot_impl.service.CommandService;
 import lombok.RequiredArgsConstructor;
@@ -11,8 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
-
 
 @Slf4j
 @Service
@@ -22,31 +26,72 @@ public class CommandServiceImpl implements CommandService {
 
     private final CommandRepository commandRepository;
     private final CommandMapper commandMapper;
+    private final InlineKeyboardRepository inlineKeyboardRepository;
 
     @Override
-    public CommandEntity findCommand(String command) {
-        return commandRepository.findByCommand(command);
-    }
-
-    @Override
-    public List<CommandEntity> findAllCommands() {
-        return commandRepository.findAll();
-    }
-
-    @Override
-    public void addCommand(CommandDto commandDto) {
-        if (commandRepository.findByCommand(commandDto.command()) != null) {
-            log.info("Command already exists: " + commandDto.command());
-            throw new IllegalArgumentException("Command already exists: " + commandDto.command());
+    public void create(CommandRequestDTO commandRequestDTO) {
+        if (commandRepository.findByCommand(commandRequestDTO.command()).isPresent()) {
+            log.warn("Command already exists: {}", commandRequestDTO.command());
+            throw new ApiException(ApiErrorType.BAD_REQUEST, "Command already exists: " + commandRequestDTO.command());
         }
-        CommandEntity commandEntity = commandMapper.toEntity(commandDto);
+
+        CommandEntity commandEntity = commandMapper.toEntity(commandRequestDTO);
+
+        InlineKeyboardEntity keyboard = inlineKeyboardRepository.findById(commandRequestDTO.inlineKeyboards().id())
+                .orElseThrow(() -> new ApiException(ApiErrorType.NOT_FOUND, "Inline keyboard with ID: " +
+                        commandRequestDTO.inlineKeyboards().id() + " not found"));
+        commandEntity.setInlineKeyboard(keyboard);
+
         commandRepository.save(commandEntity);
     }
 
     @Override
-    public Optional<CommandEntity> findById(Long id) {
-        log.info("Searching for command with ID: {}", id);
-        return commandRepository.findById(id);
+    public void update(Long id, CommandRequestDTO commandRequestDTO) {
+        CommandEntity existingCommand = commandRepository.findById(id)
+                .orElseThrow(() -> new ApiException(ApiErrorType.NOT_FOUND, "Command with ID: " + id + " not found"));
+
+        existingCommand.setCommand(commandRequestDTO.command());
+        existingCommand.setResponse(commandRequestDTO.response());
+
+        // Обновляем клавиатуру
+        InlineKeyboardEntity updatedKeyboard = inlineKeyboardRepository.findById(commandRequestDTO.inlineKeyboards().id())
+                .orElseThrow(() -> new ApiException(ApiErrorType.NOT_FOUND, "Inline keyboard with ID: " +
+                        commandRequestDTO.inlineKeyboards().id() + " not found"));
+        existingCommand.setInlineKeyboard(updatedKeyboard);
+
+        commandRepository.save(existingCommand);
     }
 
+    @Override
+    public void delete(Long id) {
+        CommandEntity existingCommand = commandRepository.findById(id)
+                .orElseThrow(() -> new ApiException(ApiErrorType.NOT_FOUND, "Command with ID: " + id + " not found"));
+
+        commandRepository.delete(existingCommand);
+    }
+
+
+    @Override
+    public CommandResponseDTO findById(Long id) {
+        log.info("Searching for command with ID: {}", id);
+        CommandEntity commandEntity = commandRepository.findById(id)
+                .orElseThrow(() -> new ApiException(ApiErrorType.NOT_FOUND, "Command with ID: " + id + " not found"));
+        return commandMapper.toResponse(commandEntity);
+    }
+
+    @Override
+    public List<CommandResponseDTO> findAll() {
+        List<CommandEntity> commands = commandRepository.findAll();
+        if (commands.isEmpty()) {
+            throw new ApiException(ApiErrorType.NOT_FOUND, "Commands not found");
+        }
+        return commandMapper.toResponseList(commands);
+    }
+
+    @Override
+    public CommandResponseDTO findByCommand(String command) {
+        CommandEntity commandEntity = commandRepository.findByCommand(command)
+                .orElseThrow(() -> new ApiException(ApiErrorType.NOT_FOUND, "Command with name: " + command + " not found"));
+        return commandMapper.toResponse(commandEntity);
+    }
 }

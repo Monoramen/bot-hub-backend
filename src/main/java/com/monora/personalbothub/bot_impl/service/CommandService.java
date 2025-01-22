@@ -1,19 +1,23 @@
 package com.monora.personalbothub.bot_impl.service;
 
-import com.monora.personalbothub.bot_api.dto.CommandDto;
-import com.monora.personalbothub.bot_db.entity.CommandEntity;
+import com.monora.personalbothub.bot_api.dto.request.CommandRequestDTO;
+import com.monora.personalbothub.bot_api.dto.response.CommandResponseDTO;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface CommandService {
 
-    CommandEntity  findCommand(String command);
+    CommandResponseDTO findByCommand(String command);
 
-    List<CommandEntity> findAllCommands();
+    List<CommandResponseDTO> findAll();
 
-    void addCommand(CommandDto commandDto);
+    CommandResponseDTO findById(Long id);
 
-    Optional<CommandEntity> findById(Long id);
+    void create(CommandRequestDTO commandRequestDTO);
+
+    void update(Long id, CommandRequestDTO commandRequestDTO);
+
+    void delete(Long id);
+
 
 }

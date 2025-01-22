@@ -1,6 +1,7 @@
 package com.monora.personalbothub.bot_api.controller;
 
 import com.monora.personalbothub.bot_api.dto.InlineKeyboardDto;
+import com.monora.personalbothub.bot_api.dto.response.InlineKeyboardResponseDTO;
 import com.monora.personalbothub.bot_db.entity.InlineKeyboardEntity;
 import com.monora.personalbothub.bot_impl.mapper.InlineKeyboardMapper;
 import com.monora.personalbothub.bot_impl.service.InlineKeyboardService;
@@ -22,14 +23,6 @@ public class InlineKeyboardController {
     private final InlineKeyboardService inlineKeyboardService;
     private final InlineKeyboardMapper inlineKeyboardMapper;
 
-    @GetMapping("/all")
-    public ResponseEntity<List<InlineKeyboardDto>> getAll() {
-        List<InlineKeyboardEntity> inlineKeyboardEntities = inlineKeyboardService.findAll();
-
-        List<InlineKeyboardDto> inlineKeyboardDtos = inlineKeyboardMapper.toDtoList(inlineKeyboardEntities);
-
-        return ResponseEntity.ok(inlineKeyboardDtos);
-    }
 
 
 }

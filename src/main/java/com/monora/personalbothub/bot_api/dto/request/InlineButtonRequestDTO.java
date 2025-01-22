@@ -1,19 +1,16 @@
-package com.monora.personalbothub.bot_api.dto;
-
+package com.monora.personalbothub.bot_api.dto.request;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.List;
-
-
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public record CommandDto(
+public record InlineButtonRequestDTO(
+        Long id,
         @NotNull
-        String command,
-        String response,
-        InlineKeyboardDto inlineKeyboards
+        String text,
+        String url,
+        String callbackData,
+        String switchInlineQuery
 ) {
-
 }

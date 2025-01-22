@@ -8,9 +8,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface InlineButtonRepository extends JpaRepository<InlineButtonEntity, Long> {
     @Query("SELECT button FROM InlineButtonEntity button JOIN FETCH button.inlineKeyboards k WHERE k.id = :inlineKeyboardId")
     List<InlineButtonEntity> findAllByInlineKeyboardId(@Param("inlineKeyboardId") Long inlineKeyboardId);
+
+    Optional<InlineButtonEntity> findByText(String  text);
 }

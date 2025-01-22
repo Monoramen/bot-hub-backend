@@ -37,7 +37,10 @@ jwt:
 
 telegram:
   bot:
-    token: 1172097134:AAHcscJQEZk-p2_EUVdhm_NSmDe8YgX2b0g
+    token: ${TELEGRAM_BOT_TOKEN}
     name: Monoramen_bot
 
 
+logging:
+  level:
+    com.pengrad.telegrambot: DEBUG

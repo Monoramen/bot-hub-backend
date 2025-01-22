@@ -1,15 +1,25 @@
 package com.monora.personalbothub.bot_impl.service;
 
-import com.monora.personalbothub.bot_api.dto.InlineButtonDto;
+import com.monora.personalbothub.bot_api.dto.request.InlineButtonRequestDTO;
+import com.monora.personalbothub.bot_api.dto.response.InlineButtonResponseDTO;
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
+
+import java.util.List;
 
 public interface InlineButtonService {
 
-    void addInlineButton(InlineButtonDto inlineButtonDto);
+    void create(InlineButtonRequestDTO inlineButtonRequestDTO);
 
-    void updateInlineButton(InlineButtonDto inlineButtonDto);
+    void update(InlineButtonRequestDTO inlineButtonRequestDTO);
+
+    void delete(Long id);
+
+    InlineButtonResponseDTO findById(Long id);
+
+    List<InlineButtonResponseDTO> findAll();
 
     InlineKeyboardButton[] getInlineButtonRowByKeyboardId(Long inlineKeyboardId);
+
 
 
 }

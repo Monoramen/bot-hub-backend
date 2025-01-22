@@ -36,6 +36,6 @@ public class InlineKeyboardEntity {
     private List<InlineButtonEntity> buttons;
 
 
-    @ManyToMany(mappedBy = "inlineKeyboards")
+    @OneToMany(mappedBy = "inlineKeyboard", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommandEntity> commands;
 }

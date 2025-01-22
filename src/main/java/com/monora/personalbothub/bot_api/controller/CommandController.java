@@ -1,9 +1,8 @@
 package com.monora.personalbothub.bot_api.controller;
 
-import com.monora.personalbothub.bot_api.dto.CommandDto;
-import com.monora.personalbothub.bot_db.entity.CommandEntity;
-import com.monora.personalbothub.bot_impl.mapper.CommandMapper;
-import com.monora.personalbothub.bot_impl.service.CommandService;
+import com.monora.personalbothub.bot_api.dto.request.CommandRequestDTO;
+import com.monora.personalbothub.bot_api.dto.response.CommandResponseDTO;
+import  com.monora.personalbothub.bot_impl.service.CommandService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -18,71 +17,64 @@ import java.util.List;
 public class CommandController {
 
     private final CommandService commandService;
-    private final CommandMapper commandMapper;
 
+    /**
+     * Получение команды по имени
+     */
     @GetMapping("/command")
-    public ResponseEntity<CommandDto> getCommandName(@RequestParam(name = "command") String command) {
-        log.info("Received request for command name: {}", command);
-        CommandEntity commandEntity = commandService.findCommand(command);
-
-        if (commandEntity != null) {
-            log.info("Found command: {}", commandEntity);
-            return ResponseEntity.ok(commandMapper.toDto(commandEntity));
-        }
-
-        log.warn("Command not found for name: {}", command);
-        return ResponseEntity.notFound().build();
+    public ResponseEntity<CommandResponseDTO> getCommandByName(@RequestParam(name = "command") String command) {
+        log.info("Fetching command by name: {}", command);
+        CommandResponseDTO commandResponse = commandService.findByCommand(command);
+        return ResponseEntity.ok(commandResponse);
     }
 
+    /**
+     * Получение всех команд
+     */
     @GetMapping("/all")
-    public ResponseEntity<List<CommandDto>> getAllCommands() {
-        List<CommandEntity> commandEntities = commandService.findAllCommands();
-
-        // Преобразуем список CommandEntity в список CommandDto с помощью маппера
-        List<CommandDto> commandDtos = commandMapper.toDtoList(commandEntities);
-
-        return ResponseEntity.ok(commandDtos);
+    public ResponseEntity<List<CommandResponseDTO>> getAllCommands() {
+        log.info("Fetching all commands");
+        List<CommandResponseDTO> commands = commandService.findAll();
+        return ResponseEntity.ok(commands);
     }
 
-    @GetMapping("/command/{id}")
-    public ResponseEntity<CommandDto> getCommandById(Long id) {
-            log.info("Received request for command ID: {}", id);
-
-            return commandService.findById(id)
-                    .map(commandMapper::toDto)
-                    .map(ResponseEntity::ok)
-                    .orElseGet(() -> {
-                        log.warn("Command not found for ID: {}", id);
-                        return ResponseEntity.notFound().build();
-                    });
-    }
-
-
+    /**
+     * Добавление новой команды
+     */
     @PostMapping("/add")
-    public ResponseEntity<CommandDto> createCommand(@RequestBody CommandDto commandDto) {
-        log.info("Received request for command: {}", commandDto);
-        commandService.addCommand(commandDto);
+    public ResponseEntity<Void> createCommand(@RequestBody CommandRequestDTO commandRequestDTO) {
+        log.info("Received request to create command: {}", commandRequestDTO);
+        commandService.create(commandRequestDTO);
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Обновление команды по ID
+     */
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Void> updateCommand(@PathVariable Long id, @RequestBody CommandRequestDTO commandRequestDTO) {
+        log.info("Received request to update command with ID: {}", id);
+        commandService.update(id, commandRequestDTO);
+        return ResponseEntity.ok().build();
+    }
 
-//
-//    @PutMapping("/employees/{id}")
-//    Employee replaceEmployee(@RequestBody Employee newEmployee, @PathVariable Long id) {
-//
-//        return repository.findById(id)
-//                .map(employee -> {
-//                    employee.setName(newEmployee.getName());
-//                    employee.setRole(newEmployee.getRole());
-//                    return repository.save(employee);
-//                })
-//                .orElseGet(() -> {
-//                    return repository.save(newEmployee);
-//                });
-//    }
-//
-//    @DeleteMapping("/employees/{id}")
-//    void deleteEmployee(@PathVariable Long id) {
-//        repository.deleteById(id);
-//    }
+    /**
+     * Удаление команды по ID
+     */
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deleteCommand(@PathVariable Long id) {
+        log.info("Received request to delete command with ID: {}", id);
+        commandService.delete(id);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * Получение команды по ID
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<CommandResponseDTO> getCommandById(@PathVariable Long id) {
+        log.info("Fetching command by ID: {}", id);
+        CommandResponseDTO commandResponse = commandService.findById(id);
+        return ResponseEntity.ok(commandResponse);
+    }
 }

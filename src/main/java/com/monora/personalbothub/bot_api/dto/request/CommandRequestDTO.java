@@ -1,4 +1,4 @@
-package com.monora.personalbothub.bot_api.dto;
+package com.monora.personalbothub.bot_api.dto.request;
 
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -7,13 +7,10 @@ import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
-
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public record CommandDto(
+public record CommandRequestDTO(
         @NotNull
         String command,
         String response,
-        InlineKeyboardDto inlineKeyboards
-) {
-
-}
+        InlineKeyboardRequestDTO inlineKeyboards // DTO для клавиатуры запроса
+) {}
