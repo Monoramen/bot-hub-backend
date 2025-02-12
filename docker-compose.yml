@@ -13,10 +13,21 @@ services:
       - postgres-personal-bot-hub:/var/lib/postgresql/data
     networks:
       - bot-network
-
+  pgadmin:
+    image:  dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com  # Укажите ваш email
+      PGADMIN_DEFAULT_PASSWORD: admin           # Укажите ваш пароль
+    ports:
+      - "5050:80"  # Порт для доступа к pgAdmin
+    depends_on:
+      - database
+    networks:
+      - bot-network
 volumes:
   postgres-personal-bot-hub:
     name: postgres-personal-bot-hub
+    external: true
 
 networks:
   bot-network:

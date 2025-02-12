@@ -1,11 +1,10 @@
 package com.monora.personalbothub.bot_impl.service.impl;
 
-import com.monora.personalbothub.bot_api.dto.InlineButtonDto;
 import com.monora.personalbothub.bot_api.dto.request.InlineButtonRequestDTO;
 import com.monora.personalbothub.bot_api.dto.response.InlineButtonResponseDTO;
 import com.monora.personalbothub.bot_api.exception.ApiErrorType;
 import com.monora.personalbothub.bot_api.exception.ApiException;
-import com.monora.personalbothub.bot_db.entity.InlineButtonEntity;
+import com.monora.personalbothub.bot_db.entity.attachment.inlinekeyboard.InlineButtonEntity;
 import com.monora.personalbothub.bot_db.repository.InlineButtonRepository;
 import com.monora.personalbothub.bot_impl.mapper.InlineButtonMapper;
 import com.monora.personalbothub.bot_impl.service.InlineButtonService;
@@ -14,7 +13,12 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -26,19 +30,18 @@ public class InlineButtonServiceImpl implements InlineButtonService {
 
 
     @Override
-    public void create(InlineButtonRequestDTO inlineButtonRequestDTO) {
-        if (checkButtonType(inlineButtonRequestDTO) == false) {
-            throw new ApiException(ApiErrorType.BAD_REQUEST, "The button can to have one of exist type");
+    public InlineButtonEntity create(InlineButtonRequestDTO inlineButtonRequestDTO) {
+        if (!checkButtonType(inlineButtonRequestDTO)) {
+            throw new ApiException(ApiErrorType.BAD_REQUEST, "The button can only have one of the existing types");
         }
 
         InlineButtonEntity inlineButtonEntity = inlineButtonMapper.toEntity(inlineButtonRequestDTO);
-        inlineButtonRepository.save(inlineButtonEntity);
+        return inlineButtonRepository.save(inlineButtonEntity); // Возвращаем сохранённую сущность
     }
 
 
-
     @Override
-    public void update(InlineButtonRequestDTO inlineButtonRequestDTO) {
+    public InlineButtonEntity update(InlineButtonRequestDTO inlineButtonRequestDTO) {
         // Проверка существования кнопки
         InlineButtonEntity existingButton = inlineButtonRepository.findById(inlineButtonRequestDTO.id()).orElseThrow(
                 () -> new ApiException(ApiErrorType.NOT_FOUND, "Button not found")
@@ -56,6 +59,7 @@ public class InlineButtonServiceImpl implements InlineButtonService {
         existingButton.setSwitchInlineQuery(inlineButtonRequestDTO.switchInlineQuery());
 
         inlineButtonRepository.save(existingButton);
+        return existingButton;
     }
 
 
@@ -84,40 +88,53 @@ public class InlineButtonServiceImpl implements InlineButtonService {
         return inlineButtonMapper.toResponseList(inlineButtonEntitys);
     }
 
+
     @Override
-    public InlineKeyboardButton[] getInlineButtonRowByKeyboardId(Long inlineKeyboardId) {
+    public InlineKeyboardButton[][] getInlineButtonRowByKeyboardId(Long inlineKeyboardId) {
         List<InlineButtonEntity> buttons = inlineButtonRepository.findAllByInlineKeyboardId(inlineKeyboardId);
+        return buildKeyboard(buttons);
+    }
 
+    private InlineKeyboardButton[][] buildKeyboard(List<InlineButtonEntity> buttons) {
         if (buttons.isEmpty()) {
-            return new InlineKeyboardButton[0]; // Возвращаем пустой массив, если кнопок нет
+            return new InlineKeyboardButton[0][0];
         }
 
-        InlineKeyboardButton[] buttonRow = new InlineKeyboardButton[buttons.size()];
+        // Группируем кнопки по рядам
+        Map<Integer, List<InlineButtonEntity>> rowMap = buttons.stream()
+                .collect(Collectors.groupingBy(InlineButtonEntity::getRow));
 
-        for (int i = 0; i < buttons.size(); i++) {
-            InlineButtonEntity button = buttons.get(i);
-            InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton(button.getText());
+        // Создаем двумерный массив кнопок
+        InlineKeyboardButton[][] buttonRows = new InlineKeyboardButton[rowMap.size()][];
+        int rowIndex = 0;
 
-            if (button.getUrl() != null) {
-                inlineKeyboardButton.url(button.getUrl());
-            } else if (button.getCallbackData() != null) {
-                inlineKeyboardButton.callbackData(button.getCallbackData());
-            } else if (button.getSwitchInlineQuery() != null) {
-                inlineKeyboardButton.switchInlineQuery(button.getSwitchInlineQuery());
-            }
-
-            buttonRow[i] = inlineKeyboardButton;
+        for (List<InlineButtonEntity> rowButtons : rowMap.values()) {
+            buttonRows[rowIndex] = rowButtons.stream()
+                    .sorted(Comparator.comparingInt(InlineButtonEntity::getPosition))
+                    .map(button -> {
+                        InlineKeyboardButton inlineButton = new InlineKeyboardButton(button.getText());
+                        if (button.getUrl() != null) {
+                            inlineButton.url(button.getUrl());
+                        } else if (button.getCallbackData() != null) {
+                            inlineButton.callbackData(button.getCallbackData());
+                        } else if (button.getSwitchInlineQuery() != null) {
+                            inlineButton.switchInlineQuery(button.getSwitchInlineQuery());
+                        }
+                        return inlineButton;
+                    }).toArray(InlineKeyboardButton[]::new);
+            rowIndex++;
         }
-        return buttonRow;
+        return buttonRows;
     }
 
     boolean checkButtonType(InlineButtonRequestDTO inlineButtonRequestDTO) {
-        int count = 0;
-        if ( inlineButtonRequestDTO.url() != null) count++;
-        if ( inlineButtonRequestDTO.callbackData() != null) count++;
-        if ( inlineButtonRequestDTO.switchInlineQuery() != null) count++;
+        long count = Stream.of(
+                inlineButtonRequestDTO.url(),
+                inlineButtonRequestDTO.callbackData(),
+                inlineButtonRequestDTO.switchInlineQuery()
+        ).filter(Objects::nonNull).count();
 
-        if (count != 1) return false;
-        else return true;
+        return count == 1;
     }
+
 }

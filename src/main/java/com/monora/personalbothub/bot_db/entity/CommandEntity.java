@@ -1,18 +1,17 @@
 package com.monora.personalbothub.bot_db.entity;
 
-
+import com.monora.personalbothub.bot_db.entity.attachment.AttachmentEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.util.Set;
 
 @Entity
 @Table(name = "command")
-@AllArgsConstructor
-@NoArgsConstructor
 @Getter
 @Setter
 @ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class CommandEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,9 +23,6 @@ public class CommandEntity {
     @Column(name = "response")
     private String response;
 
-    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinColumn(name = "inline_keyboard_id", referencedColumnName = "id")
-    private InlineKeyboardEntity inlineKeyboard;
-
-
+    @OneToMany(mappedBy = "command", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<AttachmentEntity> attachments;
 }

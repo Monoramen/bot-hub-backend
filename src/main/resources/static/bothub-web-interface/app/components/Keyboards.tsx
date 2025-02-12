@@ -23,7 +23,7 @@ const Keyboards: React.FC = () => {
     // Получаем данные с API
     const fetchKeyboards = async () => {
       try {
-        const response = await fetch("http://localhost:9090/inline-keyboards/all");
+        const response = await fetch("http://localhost:9090/inline-keyboards");
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }

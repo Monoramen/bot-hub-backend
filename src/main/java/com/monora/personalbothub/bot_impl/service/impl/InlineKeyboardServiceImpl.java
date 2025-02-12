@@ -1,12 +1,11 @@
 package com.monora.personalbothub.bot_impl.service.impl;
 
-import com.monora.personalbothub.bot_api.dto.request.InlineButtonRequestDTO;
 import com.monora.personalbothub.bot_api.dto.request.InlineKeyboardRequestDTO;
 import com.monora.personalbothub.bot_api.dto.response.InlineKeyboardResponseDTO;
 import com.monora.personalbothub.bot_api.exception.ApiErrorType;
 import com.monora.personalbothub.bot_api.exception.ApiException;
-import com.monora.personalbothub.bot_db.entity.InlineButtonEntity;
-import com.monora.personalbothub.bot_db.entity.InlineKeyboardEntity;
+import com.monora.personalbothub.bot_db.entity.attachment.inlinekeyboard.InlineButtonEntity;
+import com.monora.personalbothub.bot_db.entity.attachment.inlinekeyboard.InlineKeyboardEntity;
 import com.monora.personalbothub.bot_db.repository.InlineButtonRepository;
 import com.monora.personalbothub.bot_db.repository.InlineKeyboardRepository;
 import com.monora.personalbothub.bot_impl.mapper.InlineKeyboardMapper;
@@ -17,9 +16,12 @@ import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -32,62 +34,78 @@ public class InlineKeyboardServiceImpl implements InlineKeyboardService {
     private final InlineButtonRepository inlineButtonRepository;
 
 
-
-
     @Override
-    public void create(InlineKeyboardRequestDTO inlineKeyboardRequestDTO) {
+    @Transactional
+    public InlineKeyboardEntity create(InlineKeyboardRequestDTO inlineKeyboardRequestDTO) {
+        // Проверка на существование клавиатуры с таким именем
         if (inlineKeyboardRepository.findByInlineKeyboardName(inlineKeyboardRequestDTO.inlineKeyboardName()).isPresent()) {
             throw new ApiException(ApiErrorType.BAD_REQUEST, "Keyboard already exists");
         }
 
-        InlineKeyboardEntity inlineKeyboardEntity = inlineKeyboardMapper.toEntity(inlineKeyboardRequestDTO);
-        inlineKeyboardRepository.save(inlineKeyboardEntity); // Сначала сохраняем клавиатуру
+        // Создаем клавиатуру
+        InlineKeyboardEntity inlineKeyboardEntity = new InlineKeyboardEntity();
+        inlineKeyboardEntity.setInlineKeyboardName(inlineKeyboardRequestDTO.inlineKeyboardName());
 
-        // Создаем кнопки и добавляем их к клавиатуре
+        // Если есть кнопки, создаем их и привязываем к клавиатуре
         if (inlineKeyboardRequestDTO.buttons() != null) {
-            for (InlineButtonRequestDTO buttonDTO : inlineKeyboardRequestDTO.buttons()) {
-                inlineButtonService.create(buttonDTO);
-                // Получаем только что созданную кнопку
-                InlineButtonEntity buttonEntity = inlineButtonRepository.findByText(buttonDTO.text())
-                        .orElseThrow(() -> new ApiException(ApiErrorType.INTERNAL_SERVER_ERROR, "Button not found after creation"));
+            List<InlineButtonEntity> buttons = inlineKeyboardRequestDTO.buttons().stream()
+                    .map(buttonDTO -> {
+                        InlineButtonEntity button = new InlineButtonEntity();
+                        button.setText(buttonDTO.text());
+                        button.setUrl(buttonDTO.url());
+                        button.setCallbackData(buttonDTO.callbackData());
+                        button.setSwitchInlineQuery(buttonDTO.switchInlineQuery());
+                        button.setRow(buttonDTO.row());
+                        button.setPosition(buttonDTO.position());
+                        button.setInlineKeyboard(inlineKeyboardEntity); // Привязываем кнопку к клавиатуре
+                        return button;
+                    })
+                    .toList();
 
-                inlineKeyboardEntity.getButtons().add(buttonEntity);
-            }
-            inlineKeyboardRepository.save(inlineKeyboardEntity);
+            inlineKeyboardEntity.setButtons((Set<InlineButtonEntity>) buttons);
         }
+
+        // Сохраняем клавиатуру (кнопки сохранятся каскадно)
+        return inlineKeyboardRepository.save(inlineKeyboardEntity);
     }
 
 
+
     @Override
-    public void update(InlineKeyboardRequestDTO inlineKeyboardRequestDTO) {
+    @Transactional
+    public InlineKeyboardEntity update(InlineKeyboardRequestDTO inlineKeyboardRequestDTO) {
         // Проверка существования клавиатуры
-        InlineKeyboardEntity existingKeyboard = inlineKeyboardRepository.findByInlineKeyboardName(inlineKeyboardRequestDTO.inlineKeyboardName())
+        InlineKeyboardEntity existingKeyboard = inlineKeyboardRepository.findById(inlineKeyboardRequestDTO.id())
                 .orElseThrow(() -> new ApiException(ApiErrorType.NOT_FOUND, "Keyboard not found"));
 
         // Обновление свойств клавиатуры
         existingKeyboard.setInlineKeyboardName(inlineKeyboardRequestDTO.inlineKeyboardName());
 
-        // Обновление кнопок клавиатуры
+        // Удаляем старые кнопки
+        existingKeyboard.getButtons().clear();
+
+        // Добавляем новые кнопки
         if (inlineKeyboardRequestDTO.buttons() != null) {
-            // Удаление существующих кнопок
-            existingKeyboard.getButtons().clear();
+            Set<InlineButtonEntity> buttons = (Set<InlineButtonEntity>) inlineKeyboardRequestDTO.buttons().stream()
+                    .map(buttonDTO -> {
+                        InlineButtonEntity button = new InlineButtonEntity();
+                        button.setText(buttonDTO.text());
+                        button.setUrl(buttonDTO.url());
+                        button.setCallbackData(buttonDTO.callbackData());
+                        button.setSwitchInlineQuery(buttonDTO.switchInlineQuery());
+                        button.setRow(buttonDTO.row());
+                        button.setPosition(buttonDTO.position());
+                        button.setInlineKeyboard(existingKeyboard); // Привязываем кнопку к клавиатуре
+                        return button;
+                    })
+                    .toList();
 
-            // Создание новых кнопок и добавление их к клавиатуре
-            for (InlineButtonRequestDTO buttonDTO : inlineKeyboardRequestDTO.buttons()) {
-                inlineButtonService.create(buttonDTO); // Создаем кнопку
-
-                // Получаем только что созданную кнопку
-                InlineButtonEntity buttonEntity = inlineButtonRepository.findByText(buttonDTO.text())
-                        .orElseThrow(() -> new ApiException(ApiErrorType.INTERNAL_SERVER_ERROR, "Button not found after creation"));
-
-                existingKeyboard.getButtons().add(buttonEntity);
-            }
+            existingKeyboard.setButtons(buttons);
         }
 
-        // Сохранение обновленной клавиатуры
-        inlineKeyboardRepository.save(existingKeyboard);
+        // Сохраняем обновленную клавиатуру
+        return inlineKeyboardRepository.save(existingKeyboard);
     }
-
 
     @Override
     public void delete(Long id) {
@@ -117,12 +135,12 @@ public class InlineKeyboardServiceImpl implements InlineKeyboardService {
 
         if (optionalKeyboard.isPresent()) {
             InlineKeyboardEntity keyboard = optionalKeyboard.get();
-            InlineKeyboardButton[] buttons = inlineButtonService.getInlineButtonRowByKeyboardId(keyboard.getId());
+            InlineKeyboardButton[][] buttonRows = inlineButtonService.getInlineButtonRowByKeyboardId(keyboard.getId());
 
             log.info("keyboard: {}", keyboard.getId());
-            log.info("Buttons: {}", buttons);
+            log.info("Buttons: {}", Arrays.deepToString(buttonRows));
 
-            return new InlineKeyboardMarkup(buttons);
+            return new InlineKeyboardMarkup(buttonRows);
         }
 
         log.warn("No inline keyboard found for commandId: {}", commandId);

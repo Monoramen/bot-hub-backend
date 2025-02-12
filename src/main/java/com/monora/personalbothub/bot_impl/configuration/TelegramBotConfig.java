@@ -7,10 +7,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration
 @PropertySource("classpath:application.yml")
 @ComponentScan(basePackages = "com.monora.personalbothub")
+@EnableScheduling
 public class TelegramBotConfig {
 
     @Value("${telegram.bot.token}")

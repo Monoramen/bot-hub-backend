@@ -5,8 +5,6 @@ server:
 spring:
   application:
     name: personal-bot-hub
-  web:
-    port: 8080
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${POSTGRES_JDBC_URL:jdbc:postgresql://localhost:5001/personal_bot_hub_db}
@@ -28,7 +26,10 @@ spring:
     #default-schema: ${POSTGRES_SCHEMA:pins}
     #change-log: db/changelog/db.changelog-master.yaml
     #change-log: classpath:/${POSTGRES_SCHEMA:pins}/master.yml
-
+  devtools:
+    restart:
+      exclude: "**/static/**"
+      additional-paths: "src/main/resources"
 jwt:
   key:
     filename:

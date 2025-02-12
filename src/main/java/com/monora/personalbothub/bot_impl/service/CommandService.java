@@ -13,9 +13,9 @@ public interface CommandService {
 
     CommandResponseDTO findById(Long id);
 
-    void create(CommandRequestDTO commandRequestDTO);
+    CommandResponseDTO create(CommandRequestDTO commandRequestDTO);
 
-    void update(Long id, CommandRequestDTO commandRequestDTO);
+    CommandResponseDTO update(Long id, CommandRequestDTO commandRequestDTO);
 
     void delete(Long id);
 

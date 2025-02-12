@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1738686648022-1
+      author: Monoramen
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - dropNotNullConstraint:
+            columnDataType: varchar(31)
+            columnName: attachment_type
+            tableName: attachment
+

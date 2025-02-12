@@ -1,10 +1,7 @@
 package com.monora.personalbothub.bot_db.repository;
 
-import com.monora.personalbothub.bot_db.entity.CommandEntity;
-import com.monora.personalbothub.bot_db.entity.InlineButtonEntity;
+import com.monora.personalbothub.bot_db.entity.attachment.inlinekeyboard.InlineButtonEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,8 +9,11 @@ import java.util.Optional;
 
 @Repository
 public interface InlineButtonRepository extends JpaRepository<InlineButtonEntity, Long> {
-    @Query("SELECT button FROM InlineButtonEntity button JOIN FETCH button.inlineKeyboards k WHERE k.id = :inlineKeyboardId")
-    List<InlineButtonEntity> findAllByInlineKeyboardId(@Param("inlineKeyboardId") Long inlineKeyboardId);
+    List<InlineButtonEntity> findAllByInlineKeyboardId(Long inlineKeyboardId);
 
-    Optional<InlineButtonEntity> findByText(String  text);
+
+    //        @Query("SELECT b FROM InlineButtonEntity b WHERE b.inlineKeyboard.id = :inlineKeyboardId")
+//        List<InlineButtonEntity> findAllByInlineKeyboardId(@Param("inlineKeyboardId") Long inlineKeyboardId);
+//
+    Optional<InlineButtonEntity> findByText(String text);
 }

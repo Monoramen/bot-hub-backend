@@ -2,8 +2,9 @@ package com.monora.personalbothub.bot_impl.mapper;
 
 import com.monora.personalbothub.bot_api.dto.request.InlineKeyboardRequestDTO;
 import com.monora.personalbothub.bot_api.dto.response.InlineKeyboardResponseDTO;
-import com.monora.personalbothub.bot_db.entity.InlineKeyboardEntity;
+import com.monora.personalbothub.bot_db.entity.attachment.inlinekeyboard.InlineKeyboardEntity;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 
 import java.util.List;
 

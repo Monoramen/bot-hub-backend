@@ -38,14 +38,14 @@ dependencies {
     implementation 'org.liquibase:liquibase-core'
 
     implementation 'org.slf4j:slf4j-api:2.0.16'
-
+    implementation 'org.hibernate.validator:hibernate-validator:8.0.0.Final'
 
     implementation 'org.json:json:20240303'
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
     testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
 
-
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'

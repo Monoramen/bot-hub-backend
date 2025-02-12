@@ -2,7 +2,7 @@ package com.monora.personalbothub.bot_api.controller;
 
 import com.monora.personalbothub.bot_api.dto.request.CommandRequestDTO;
 import com.monora.personalbothub.bot_api.dto.response.CommandResponseDTO;
-import  com.monora.personalbothub.bot_impl.service.CommandService;
+import com.monora.personalbothub.bot_impl.service.CommandService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -39,23 +39,23 @@ public class CommandController {
     }
 
     /**
-     * Добавление новой команды
+     * Добавление новой команды с возможностью прикрепить клавиатуру
      */
     @PostMapping("/add")
-    public ResponseEntity<Void> createCommand(@RequestBody CommandRequestDTO commandRequestDTO) {
+    public ResponseEntity<CommandResponseDTO> createCommand(@RequestBody CommandRequestDTO commandRequestDTO) {
         log.info("Received request to create command: {}", commandRequestDTO);
-        commandService.create(commandRequestDTO);
-        return ResponseEntity.ok().build();
+        CommandResponseDTO createdCommand = commandService.create(commandRequestDTO);
+        return ResponseEntity.ok(createdCommand);  // Возвращаем созданную команду
     }
 
     /**
-     * Обновление команды по ID
+     * Обновление команды по ID, включая обновление клавиатуры
      */
     @PutMapping("/update/{id}")
-    public ResponseEntity<Void> updateCommand(@PathVariable Long id, @RequestBody CommandRequestDTO commandRequestDTO) {
+    public ResponseEntity<CommandResponseDTO> updateCommand(@PathVariable Long id, @RequestBody CommandRequestDTO commandRequestDTO) {
         log.info("Received request to update command with ID: {}", id);
-        commandService.update(id, commandRequestDTO);
-        return ResponseEntity.ok().build();
+        CommandResponseDTO updatedCommand = commandService.update(id, commandRequestDTO);
+        return ResponseEntity.ok(updatedCommand);  // Возвращаем обновленную команду
     }
 
     /**
