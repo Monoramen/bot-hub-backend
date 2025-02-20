@@ -16,5 +16,14 @@ public record KeyboardRequestDTO(
         @NotNull
         String keyboardName,
         @Nullable
-        Set<ButtonRequestDTO> buttons
+        Set<ButtonRequestDTO> buttons,
+        @Nullable
+        boolean oneTimeKeyboard,
+        @Nullable
+        boolean resizeKeyboard,
+        @Nullable
+        boolean selective,
+        @Nullable
+        boolean autoRemove
+
 ) {}

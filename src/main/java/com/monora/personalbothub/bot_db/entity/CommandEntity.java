@@ -23,6 +23,6 @@ public class CommandEntity {
     @Column(name = "response")
     private String response;
 
-    @OneToMany(mappedBy = "command", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "command", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<AttachmentEntity> attachments;
 }

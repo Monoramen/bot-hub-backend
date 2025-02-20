@@ -10,10 +10,8 @@ import java.util.Optional;
 @Repository
 public interface InlineButtonRepository extends JpaRepository<InlineButtonEntity, Long> {
     List<InlineButtonEntity> findAllByInlineKeyboardId(Long inlineKeyboardId);
-
-
     //        @Query("SELECT b FROM InlineButtonEntity b WHERE b.inlineKeyboard.id = :inlineKeyboardId")
-//        List<InlineButtonEntity> findAllByInlineKeyboardId(@Param("inlineKeyboardId") Long inlineKeyboardId);
-//
+    //        List<InlineButtonEntity> findAllByInlineKeyboardId(@Param("inlineKeyboardId") Long inlineKeyboardId);
+
     Optional<InlineButtonEntity> findByText(String text);
 }

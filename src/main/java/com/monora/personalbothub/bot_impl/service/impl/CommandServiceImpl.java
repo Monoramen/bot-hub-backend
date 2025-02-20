@@ -83,4 +83,6 @@ public class CommandServiceImpl implements CommandService {
                 .orElseThrow(() -> new ApiException(ApiErrorType.NOT_FOUND, "Command with name: " + command + " not found"));
         return commandMapper.toResponseDTO(commandEntity);
     }
+
+
 }

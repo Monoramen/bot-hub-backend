@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 @AllArgsConstructor
-public class PhotoAttachmentHandler implements AttachmentHandler {
+public class PhotoHandler implements AttachmentHandler {
 
     private final TelegramBot telegramBot;
 

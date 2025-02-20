@@ -11,12 +11,10 @@ import java.util.Optional;
 
 @Repository
 public interface InlineKeyboardRepository extends JpaRepository<InlineKeyboardEntity, Long> {
-    @Query("SELECT ik FROM InlineKeyboardEntity ik JOIN AttachmentEntity a ON ik.id = a.id WHERE a.command.id = :commandId")
-     Optional<InlineKeyboardEntity> findByCommandId(@Param("commandId") Long commandId);
+    @Query("SELECT ik.inlineKeyboard FROM InlineKeyboardAttachmentEntity ik WHERE ik.command.id = :commandId")
+    Optional<InlineKeyboardEntity> findByCommandId(@Param("commandId") Long commandId);
 
     Optional<InlineKeyboardEntity> findById(Long id);
-
-    List<InlineKeyboardEntity> findAll();
 
     Optional<InlineKeyboardEntity> findByInlineKeyboardName(String inlineKeyboardName);
 }

@@ -12,5 +12,12 @@ public record ButtonResponseDTO(
         Long id,
         @NotNull
         String text,
-        Long keyboardId
+        Long keyboardId,
+        int position,
+        int row,
+        @Nullable
+        boolean requestContact,
+        @Nullable
+        boolean requestLocation
+
 ) {}

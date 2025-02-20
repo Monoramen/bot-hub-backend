@@ -28,13 +28,13 @@ public class InlineButtonEntity {
     @Column(name = "switch_inline_query")
     private String switchInlineQuery;
 
-    @ManyToOne
-    @JoinColumn(name = "inline_keyboard_id", nullable = false)
-    private InlineKeyboardEntity inlineKeyboard;
-
     @Column(name = "row")
     private int row;
 
     @Column(name = "position")
     private int position;
+
+    @ManyToOne
+    @JoinColumn(name = "inline_keyboard_id", nullable = false)
+    private InlineKeyboardEntity inlineKeyboard;
 }

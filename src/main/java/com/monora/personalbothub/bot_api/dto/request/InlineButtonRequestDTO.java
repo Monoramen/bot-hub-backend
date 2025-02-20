@@ -28,7 +28,7 @@ public record InlineButtonRequestDTO(
         Integer position,
         @Nullable
         @JsonProperty("inline_keyboard_id")
-        String inlineKeyboardId
+        Long inlineKeyboardId
 ) {
         @AssertTrue(message = "Only one type of button (url, callbackData, or switchInlineQuery) must be set.")
         public boolean isValidButtonType() {

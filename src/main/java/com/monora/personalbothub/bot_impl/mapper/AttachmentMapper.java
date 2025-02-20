@@ -26,17 +26,17 @@ public interface AttachmentMapper {
     // Убедитесь, что свойства соответствуют AttachmentEntity
     AttachmentResponseDTO toResponseDTO(AttachmentEntity entity);
 
-    default KeyboardEntity map(Long keyboardId) {
-        if (keyboardId == null) {
-            return null;
-        }
-        return KeyboardEntity.builder().id(keyboardId).build();
-    }
-
-    default InlineKeyboardEntity mapInline(Long inlineKeyboardId) {
-        if (inlineKeyboardId == null) {
-            return null;
-        }
-        return InlineKeyboardEntity.builder().id(inlineKeyboardId).build();
-    }
+//    default KeyboardEntity map(Long keyboardId) {
+//        if (keyboardId == null) {
+//            return null;
+//        }
+//        return KeyboardEntity.builder().id(keyboardId).build();
+//    }
+//
+//    default InlineKeyboardEntity mapInline(Long inlineKeyboardId) {
+//        if (inlineKeyboardId == null) {
+//            return null;
+//        }
+//        return InlineKeyboardEntity.builder().id(inlineKeyboardId).build();
+//    }
 }

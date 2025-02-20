@@ -80,12 +80,12 @@ public class InlineButtonServiceImpl implements InlineButtonService {
 
     @Override
     public List<InlineButtonResponseDTO> findAll() {
-        List<InlineButtonEntity> inlineButtonEntitys = inlineButtonRepository.findAll();
-        if (inlineButtonEntitys.isEmpty()) {
+        List<InlineButtonEntity> inlineButtonEntities = inlineButtonRepository.findAll();
+        if (inlineButtonEntities.isEmpty()) {
             throw new ApiException(ApiErrorType.NOT_FOUND, "Inline buttons not found");
         }
 
-        return inlineButtonMapper.toResponseList(inlineButtonEntitys);
+        return inlineButtonMapper.toResponseList(inlineButtonEntities);
     }
 
 

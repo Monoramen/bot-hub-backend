@@ -1,7 +1,6 @@
 package com.monora.personalbothub.bot_db.entity.attachment.inlinekeyboard;
 
 
-import com.monora.personalbothub.bot_db.entity.CommandEntity;
 import jakarta.persistence.*;
 import lombok.*;
 

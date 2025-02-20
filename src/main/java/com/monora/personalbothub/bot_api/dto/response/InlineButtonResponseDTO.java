@@ -22,5 +22,5 @@ public record InlineButtonResponseDTO(
         @Nullable
         Integer position,
         @Nullable
-        String inlineKeyboardId
+        Long inlineKeyboardId
 ) {}

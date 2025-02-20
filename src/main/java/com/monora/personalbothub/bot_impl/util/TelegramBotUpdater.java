@@ -1,5 +1,6 @@
 package com.monora.personalbothub.bot_impl.util;
 
+import com.monora.personalbothub.bot_impl.service.KeyboardResult;
 import com.monora.personalbothub.bot_impl.util.handler.UpdateDispatcher;
 import com.pengrad.telegrambot.Callback;
 import com.pengrad.telegrambot.TelegramBot;
@@ -23,6 +24,7 @@ public class TelegramBotUpdater {
 
     private final TelegramBot telegramBot;
     private final UpdateDispatcher updateDispatcher;
+
     private int offset = 0;
 
     // Очередь для обновлений
@@ -55,6 +57,7 @@ public class TelegramBotUpdater {
                         if (processedUpdateIds.add(update.updateId())) {
                             updateQueue.offer(update);
                             log.info("Enqueued update: {}", update.updateId());
+
                         } else {
                             log.info("Skipped duplicate update: {}", update.updateId());
                         }

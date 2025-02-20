@@ -1,7 +1,6 @@
 package com.monora.personalbothub.bot_db.entity.attachment;
 
 import com.monora.personalbothub.bot_db.entity.CommandEntity;
-import com.monora.personalbothub.bot_db.enums.AttachmentTypeEnum;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

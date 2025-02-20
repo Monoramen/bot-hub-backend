@@ -19,7 +19,7 @@ import lombok.Setter;
 public class KeyboardAttachmentEntity extends AttachmentEntity {
 
     @ManyToOne
-    @JoinColumn(name = "keyboard_id")
+    @JoinColumn(name = "keyboard_id", nullable = true, insertable = false, updatable = false)
     private KeyboardEntity keyboard;
 
 }

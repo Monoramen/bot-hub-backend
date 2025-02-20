@@ -12,6 +12,15 @@ INSERT INTO inline_button (id, text, url, callback_data, switch_inline_query, ro
     (2, 'reddit', 'https://www.reddit.com/','','', 2, 1, 1),
     (3, 'github', 'https://github.com/','','',2,2,1);
 
-
 INSERT INTO attachment (type, command_id, inline_keyboard_id, keyboard_id) VALUES
     ('INLINE_KEYBOARD', 1, 1, null);
+
+INSERT INTO keyboard (id, keyboard_name,one_time_keyboard, resize_keyboard,selective ) VALUES
+    (1, 'keys', true, false, false);
+
+INSERT INTO button(id, text, keyboard_id, position, request_contact,request_location,row) VALUES
+    (1 ,'text', 1, 1, false, false, 1),
+(2 ,'text2', 1, 2, false, false, 1);
+
+INSERT INTO attachment (type, command_id, inline_keyboard_id, keyboard_id) VALUES
+    ('KEYBOARD', 2, null, 1);
