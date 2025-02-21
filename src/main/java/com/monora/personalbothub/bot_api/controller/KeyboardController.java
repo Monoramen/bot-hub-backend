@@ -1,11 +1,19 @@
 package com.monora.personalbothub.bot_api.controller;
 
-import com.monora.personalbothub.bot_impl.mapper.ButtonMapper;
-import com.monora.personalbothub.bot_impl.service.ButtonService;
+import com.monora.personalbothub.bot_api.dto.request.KeyboardRequestDTO;
+import com.monora.personalbothub.bot_api.dto.response.KeyboardResponseDTO;
+import com.monora.personalbothub.bot_db.entity.attachment.keyboard.KeyboardEntity;
+import com.monora.personalbothub.bot_impl.mapper.KeyboardMapper;
+import com.monora.personalbothub.bot_impl.service.KeyboardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -13,38 +21,40 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class KeyboardController {
 
-//    private final ButtonService buttonService;
-//    private final ButtonMapper inlineButtonMapper;
-//
-//    @PostMapping("/add")
-//    public ResponseEntity<ButtonResponseDTO> create(@RequestBody ButtonRequestDTO requestDTO) {
-//        buttonService.create(requestDTO);
-//        ButtonEntity entity = inlineButtonMapper.toEntity(requestDTO);
-//        return ResponseEntity.status(HttpStatus.CREATED).body(inlineButtonMapper.toResponse(entity));
-//    }
-//
-//    @PutMapping("/{id}")
-//    public ResponseEntity<ButtonResponseDTO> update(@PathVariable Long id, @RequestBody ButtonRequestDTO requestDTO) {
-//        buttonService.update(requestDTO);
-//        ButtonResponseDTO responseDTO = buttonService.findById(id);
-//        return ResponseEntity.ok(responseDTO);
-//    }
-//
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<Void> delete(@PathVariable Long id) {
-//        buttonService.delete(id);
-//        return ResponseEntity.noContent().build();
-//    }
-//
-//    @GetMapping("/{id}")
-//    public ResponseEntity<ButtonResponseDTO> findById(@PathVariable Long id) {
-//        ButtonResponseDTO responseDTO = buttonService.findById(id);
-//        return ResponseEntity.ok(responseDTO);
-//    }
-//
-//    @GetMapping()
-//    public ResponseEntity<List<ButtonResponseDTO>> findAll() {
-//        List<ButtonResponseDTO> responseDTOs = buttonService.findAll();
-//        return ResponseEntity.ok(responseDTOs);
-//    }
+    private final KeyboardService keyboardService;
+    private final KeyboardMapper keyboardMapper;
+
+    @PostMapping("/add")
+    public ResponseEntity<KeyboardResponseDTO> createInlineKeyboard(@RequestBody KeyboardRequestDTO requestDTO) {
+        KeyboardEntity createdEntity = keyboardService.create(requestDTO);
+        KeyboardResponseDTO responseDTO = keyboardMapper.toResponse(createdEntity);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<KeyboardResponseDTO> update(@PathVariable Long id, @RequestBody KeyboardRequestDTO requestDTO) {
+        keyboardService.update(id, requestDTO);
+        KeyboardResponseDTO responseDTO = keyboardService.findById(id);
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, String>> delete(@PathVariable Long id) {
+        keyboardService.delete(id);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Keyboard with id " + id + " was deleted successfully");
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<KeyboardResponseDTO> findById(@PathVariable Long id) {
+        KeyboardResponseDTO responseDTO = keyboardService.findById(id);
+        return ResponseEntity.ok(responseDTO);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<KeyboardResponseDTO>> findAll() {
+        List<KeyboardResponseDTO> responseDTOs = keyboardService.findAll();
+        return ResponseEntity.ok(responseDTOs);
+    }
 }

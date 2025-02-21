@@ -10,10 +10,11 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-@ToString
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class InlineButtonEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Long id;
 
     @Column(name = "text", nullable = false)

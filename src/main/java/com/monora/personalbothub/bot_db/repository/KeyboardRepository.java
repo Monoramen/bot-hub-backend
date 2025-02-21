@@ -14,4 +14,6 @@ public interface KeyboardRepository extends JpaRepository<KeyboardEntity, Long> 
     @Query("SELECT kae.keyboard FROM KeyboardAttachmentEntity kae WHERE kae.command.id = :commandId")
     Optional<KeyboardEntity> findByCommandId(@Param("commandId") Long commandId);
 
+    Optional<KeyboardEntity> findByKeyboardName(String keyboardName);
+
 }

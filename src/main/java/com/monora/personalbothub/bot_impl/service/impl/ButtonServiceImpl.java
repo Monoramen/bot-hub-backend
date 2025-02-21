@@ -5,6 +5,7 @@ import com.monora.personalbothub.bot_api.dto.response.ButtonResponseDTO;
 import com.monora.personalbothub.bot_api.exception.ApiErrorType;
 import com.monora.personalbothub.bot_api.exception.ApiException;
 import com.monora.personalbothub.bot_db.entity.attachment.keyboard.ButtonEntity;
+import com.monora.personalbothub.bot_db.entity.attachment.keyboard.KeyboardEntity;
 import com.monora.personalbothub.bot_db.repository.ButtonRepository;
 import com.monora.personalbothub.bot_impl.mapper.ButtonMapper;
 import com.monora.personalbothub.bot_impl.service.ButtonService;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -29,25 +31,44 @@ public class ButtonServiceImpl implements ButtonService {
     private final ButtonMapper buttonMapper;
 
     @Override
-    public ButtonEntity create(ButtonRequestDTO buttonRequestDTO) {
-        return null;
+    @Transactional
+    public ButtonEntity create(ButtonRequestDTO buttonRequestDTO, KeyboardEntity keyboard) {
+        Optional<ButtonEntity> existingButton = buttonRepository.findByText(buttonRequestDTO.text());
+
+        if (existingButton.isPresent()) {
+            // Если кнопка с таким текстом уже существует, выбрасываем исключение
+            throw new ApiException(ApiErrorType.BAD_REQUEST, "Button with text: "
+                    + buttonRequestDTO.text() + " already exists");
+        } else {
+            ButtonEntity button = new ButtonEntity();
+            button.setText(buttonRequestDTO.text());
+            button.setRow(buttonRequestDTO.row());
+            button.setPosition(buttonRequestDTO.position());
+            button.setRequestLocation(buttonRequestDTO.requestLocation());
+            button.setRequestContact(buttonRequestDTO.requestContact());
+            button.setKeyboard(keyboard); // Привязываем кнопку к клавиатуре
+            return buttonRepository.save(button);
+        }
     }
 
     @Override
-    public ButtonResponseDTO update(ButtonRequestDTO buttonRequestDTO) {
-        ButtonEntity existingButton = buttonRepository.findById(buttonRequestDTO.id()).orElseThrow(
-                () -> new ApiException(ApiErrorType.NOT_FOUND, "Button not found")
-        );
+    @Transactional
+    public ButtonEntity update(ButtonRequestDTO buttonRequestDTO) {
+        ButtonEntity existingButton = buttonRepository.findById(buttonRequestDTO.id())
+                .orElseThrow(() -> new ApiException(ApiErrorType.NOT_FOUND, "Button not found"));
+
         existingButton.setText(buttonRequestDTO.text());
-        //    existingButton.setKeyboard(buttonRequestDTO.keyboardId());
         existingButton.setRow(buttonRequestDTO.row());
         existingButton.setPosition(buttonRequestDTO.position());
-        existingButton.setRequestContact(buttonRequestDTO.requestContact());
         existingButton.setRequestLocation(buttonRequestDTO.requestLocation());
-        buttonRepository.save(existingButton);
-        return buttonMapper.toResponse(existingButton);
+        existingButton.setRequestContact(buttonRequestDTO.requestContact());
+
+        return buttonRepository.save(existingButton);
     }
 
+
+
+    @Transactional
     @Override
     public void delete(Long id) {
         ButtonEntity buttonEntity = buttonRepository.findById(id).orElseThrow(
@@ -55,13 +76,14 @@ public class ButtonServiceImpl implements ButtonService {
         buttonRepository.delete(buttonEntity);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ButtonResponseDTO findById(Long id) {
         ButtonEntity buttonEntity = buttonRepository.findById(id).orElseThrow(
                 () -> new ApiException(ApiErrorType.NOT_FOUND, "Button not found"));
         return buttonMapper.toResponse(buttonEntity);
     }
-
+    @Transactional(readOnly = true)
     @Override
     public List<ButtonResponseDTO> findAll() {
         List<ButtonEntity> buttonEntities = buttonRepository.findAll();
@@ -71,6 +93,7 @@ public class ButtonServiceImpl implements ButtonService {
         return buttonMapper.toResponseList(buttonEntities);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public KeyboardButton[][] getButtonRowByKeyboardId(Long keyboardId) {
         List<ButtonEntity> buttons = buttonRepository.findAllByKeyboardId(keyboardId);

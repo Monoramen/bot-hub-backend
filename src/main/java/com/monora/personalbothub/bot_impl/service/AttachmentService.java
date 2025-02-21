@@ -2,20 +2,18 @@ package com.monora.personalbothub.bot_impl.service;
 
 import com.monora.personalbothub.bot_api.dto.request.AttachmentRequestDTO;
 import com.monora.personalbothub.bot_api.dto.response.AttachmentResponseDTO;
-
-import java.util.List;
+import com.monora.personalbothub.bot_db.entity.attachment.AttachmentEntity;
 
 
 public interface AttachmentService {
 
+    AttachmentEntity create(AttachmentRequestDTO dto);
 
-    AttachmentResponseDTO createAttachment(AttachmentRequestDTO dto);
+    AttachmentResponseDTO getById(Long id);
 
-    AttachmentResponseDTO getAttachment(Long id);
+    AttachmentResponseDTO getAttachmentByCommandId(Long commandId);
 
-    List<AttachmentResponseDTO> getAttachmentsByCommandId(Long commandId);
+    AttachmentResponseDTO update(AttachmentRequestDTO dto);
 
-    public AttachmentResponseDTO updateAttachment(Long id, AttachmentRequestDTO dto);
-
-    void deleteAttachment(Long id);
+    void delete(Long id);
 }

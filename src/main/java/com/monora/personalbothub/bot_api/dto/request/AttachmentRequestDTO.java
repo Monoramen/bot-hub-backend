@@ -2,7 +2,6 @@ package com.monora.personalbothub.bot_api.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.monora.personalbothub.bot_db.enums.AttachmentTypeEnum;
 import jakarta.annotation.Nullable;

@@ -31,7 +31,7 @@ public class InlineKeyboardController {
 
     @PutMapping("/{id}")
     public ResponseEntity<InlineKeyboardResponseDTO> update(@PathVariable Long id, @RequestBody InlineKeyboardRequestDTO requestDTO) {
-        inlineKeyboardService.update(requestDTO);
+        inlineKeyboardService.update(id, requestDTO);
         InlineKeyboardResponseDTO responseDTO = inlineKeyboardService.findById(id);
         return ResponseEntity.ok(responseDTO);
     }

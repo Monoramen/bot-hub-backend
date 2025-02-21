@@ -24,9 +24,10 @@ public class InlineButtonController {
 
     @PostMapping("/add")
     public ResponseEntity<InlineButtonResponseDTO> create(@RequestBody InlineButtonRequestDTO requestDTO) {
-        inlineButtonService.create(requestDTO);
-        InlineButtonEntity entity = inlineButtonMapper.toEntity(requestDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(inlineButtonMapper.toResponse(entity));
+//        inlineButtonService.create(requestDTO);
+//        InlineButtonEntity entity = inlineButtonMapper.toEntity(requestDTO);
+//        return ResponseEntity.status(HttpStatus.CREATED).body(inlineButtonMapper.toResponse(entity));
+    return null;
     }
 
     @PutMapping("/{id}")

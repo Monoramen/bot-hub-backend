@@ -1,10 +1,7 @@
 package com.monora.personalbothub.bot_db.entity.attachment.keyboard;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "button")
@@ -12,9 +9,11 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true) // Генерировать equals и hashCode только для полей с @EqualsAndHashCode.Include
 public class ButtonEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include // Включаем только это поле в equals и hashCode
     private long id;
 
     @Column(name = "text", nullable = false, unique = true)
@@ -30,10 +29,9 @@ public class ButtonEntity {
     private Boolean requestContact = false;
 
     @Column(name = "request_location")
-    private Boolean requestLocation =  false;
+    private Boolean requestLocation = false;
 
     @ManyToOne
     @JoinColumn(name = "keyboard_id", nullable = false)
     private KeyboardEntity keyboard;
 }
-

@@ -14,8 +14,8 @@ import java.util.Set;
 @Builder
 public class KeyboardEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(name = "keyboard_name", nullable = false, unique = true)
     private String keyboardName;

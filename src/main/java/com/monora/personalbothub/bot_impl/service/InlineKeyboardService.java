@@ -11,7 +11,7 @@ public interface InlineKeyboardService {
 
     InlineKeyboardEntity create(InlineKeyboardRequestDTO inlineKeyboardRequestDTO);
 
-    InlineKeyboardEntity update(InlineKeyboardRequestDTO inlineKeyboardRequestDTO);
+    InlineKeyboardEntity update(Long id,InlineKeyboardRequestDTO inlineKeyboardRequestDTO);
 
     void delete(Long id);
 
@@ -21,4 +21,5 @@ public interface InlineKeyboardService {
 
     InlineKeyboardMarkup getInlineKeyboardByCommandId(Long commandId);
 
+    InlineKeyboardEntity getById(Long id);
 }

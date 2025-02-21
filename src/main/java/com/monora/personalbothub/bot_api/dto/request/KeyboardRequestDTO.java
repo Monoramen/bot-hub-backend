@@ -1,6 +1,7 @@
 package com.monora.personalbothub.bot_api.dto.request;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import jakarta.annotation.Nullable;
@@ -16,6 +17,7 @@ public record KeyboardRequestDTO(
         @NotNull
         String keyboardName,
         @Nullable
+        @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
         Set<ButtonRequestDTO> buttons,
         @Nullable
         boolean oneTimeKeyboard,

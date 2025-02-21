@@ -16,7 +16,7 @@ INSERT INTO attachment (type, command_id, inline_keyboard_id, keyboard_id) VALUE
     ('INLINE_KEYBOARD', 1, 1, null);
 
 INSERT INTO keyboard (id, keyboard_name,one_time_keyboard, resize_keyboard,selective ) VALUES
-    (1, 'keys', true, false, false);
+    (1, 'keys', true, true, false);
 
 INSERT INTO button(id, text, keyboard_id, position, request_contact,request_location,row) VALUES
     (1 ,'text', 1, 1, false, false, 1),
@@ -24,3 +24,5 @@ INSERT INTO button(id, text, keyboard_id, position, request_contact,request_loca
 
 INSERT INTO attachment (type, command_id, inline_keyboard_id, keyboard_id) VALUES
     ('KEYBOARD', 2, null, 1);
+
+SELECT setval('button_id_seq', (SELECT MAX(id) FROM button));

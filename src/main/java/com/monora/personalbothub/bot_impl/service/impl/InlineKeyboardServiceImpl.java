@@ -1,11 +1,14 @@
 package com.monora.personalbothub.bot_impl.service.impl;
 
+import com.monora.personalbothub.bot_api.dto.request.ButtonRequestDTO;
+import com.monora.personalbothub.bot_api.dto.request.InlineButtonRequestDTO;
 import com.monora.personalbothub.bot_api.dto.request.InlineKeyboardRequestDTO;
 import com.monora.personalbothub.bot_api.dto.response.InlineKeyboardResponseDTO;
 import com.monora.personalbothub.bot_api.exception.ApiErrorType;
 import com.monora.personalbothub.bot_api.exception.ApiException;
 import com.monora.personalbothub.bot_db.entity.attachment.inlinekeyboard.InlineButtonEntity;
 import com.monora.personalbothub.bot_db.entity.attachment.inlinekeyboard.InlineKeyboardEntity;
+import com.monora.personalbothub.bot_db.entity.attachment.keyboard.ButtonEntity;
 import com.monora.personalbothub.bot_db.repository.InlineButtonRepository;
 import com.monora.personalbothub.bot_db.repository.InlineKeyboardRepository;
 import com.monora.personalbothub.bot_impl.mapper.InlineKeyboardMapper;
@@ -18,20 +21,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @AllArgsConstructor
+
 public class InlineKeyboardServiceImpl implements InlineKeyboardService {
 
     private final InlineButtonService inlineButtonService;
     private final InlineKeyboardMapper inlineKeyboardMapper;
     private final InlineKeyboardRepository inlineKeyboardRepository;
-    private final InlineButtonRepository inlineButtonRepository;
 
 
     @Override
@@ -41,29 +42,22 @@ public class InlineKeyboardServiceImpl implements InlineKeyboardService {
         if (inlineKeyboardRepository.findByInlineKeyboardName(inlineKeyboardRequestDTO.inlineKeyboardName()).isPresent()) {
             throw new ApiException(ApiErrorType.BAD_REQUEST, "Keyboard already exists");
         }
-
         // Создаем клавиатуру
         InlineKeyboardEntity inlineKeyboardEntity = new InlineKeyboardEntity();
         inlineKeyboardEntity.setInlineKeyboardName(inlineKeyboardRequestDTO.inlineKeyboardName());
 
-        // Если есть кнопки, создаем их и привязываем к клавиатуре
-        if (inlineKeyboardRequestDTO.buttons() != null) {
-            List<InlineButtonEntity> buttons = inlineKeyboardRequestDTO.buttons().stream()
-                    .map(buttonDTO -> {
-                        InlineButtonEntity button = new InlineButtonEntity();
-                        button.setText(buttonDTO.text());
-                        button.setUrl(buttonDTO.url());
-                        button.setCallbackData(buttonDTO.callbackData());
-                        button.setSwitchInlineQuery(buttonDTO.switchInlineQuery());
-                        button.setRow(buttonDTO.row());
-                        button.setPosition(buttonDTO.position());
-                        button.setInlineKeyboard(inlineKeyboardEntity); // Привязываем кнопку к клавиатуре
-                        return button;
-                    })
-                    .toList();
+        inlineKeyboardEntity = inlineKeyboardRepository.save(inlineKeyboardEntity);
 
-            inlineKeyboardEntity.setButtons((Set<InlineButtonEntity>) buttons);
+
+        if (inlineKeyboardRequestDTO.buttons() != null) {
+            Set<InlineButtonEntity> buttons = new HashSet<>();
+            for (InlineButtonRequestDTO buttonDTO : inlineKeyboardRequestDTO.buttons()) {
+                InlineButtonEntity button = inlineButtonService.create(inlineKeyboardEntity, buttonDTO);
+                buttons.add(button);
+            }
+            inlineKeyboardEntity.setButtons(buttons);
         }
+
 
         // Сохраняем клавиатуру (кнопки сохранятся каскадно)
         return inlineKeyboardRepository.save(inlineKeyboardEntity);
@@ -73,9 +67,9 @@ public class InlineKeyboardServiceImpl implements InlineKeyboardService {
 
     @Override
     @Transactional
-    public InlineKeyboardEntity update(InlineKeyboardRequestDTO inlineKeyboardRequestDTO) {
+    public InlineKeyboardEntity update(Long id, InlineKeyboardRequestDTO inlineKeyboardRequestDTO) {
         // Проверка существования клавиатуры
-        InlineKeyboardEntity existingKeyboard = inlineKeyboardRepository.findById(inlineKeyboardRequestDTO.id())
+        InlineKeyboardEntity existingKeyboard = inlineKeyboardRepository.findById(id)
                 .orElseThrow(() -> new ApiException(ApiErrorType.NOT_FOUND, "Keyboard not found"));
 
         // Обновление свойств клавиатуры
@@ -84,23 +78,26 @@ public class InlineKeyboardServiceImpl implements InlineKeyboardService {
         // Удаляем старые кнопки
         existingKeyboard.getButtons().clear();
 
-        // Добавляем новые кнопки
-        if (inlineKeyboardRequestDTO.buttons() != null) {
-            Set<InlineButtonEntity> buttons = (Set<InlineButtonEntity>) inlineKeyboardRequestDTO.buttons().stream()
-                    .map(buttonDTO -> {
-                        InlineButtonEntity button = new InlineButtonEntity();
-                        button.setText(buttonDTO.text());
-                        button.setUrl(buttonDTO.url());
-                        button.setCallbackData(buttonDTO.callbackData());
-                        button.setSwitchInlineQuery(buttonDTO.switchInlineQuery());
-                        button.setRow(buttonDTO.row());
-                        button.setPosition(buttonDTO.position());
-                        button.setInlineKeyboard(existingKeyboard); // Привязываем кнопку к клавиатуре
-                        return button;
-                    })
-                    .toList();
+        Set<InlineButtonEntity> existingButtons = existingKeyboard.getButtons();
+        Set<Long> newButtonIds = inlineKeyboardRequestDTO.buttons().stream()
+                .map(InlineButtonRequestDTO::id)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
 
-            existingKeyboard.setButtons(buttons);
+        existingButtons.removeIf(button -> !newButtonIds.contains(button.getId()));
+
+        // Обновляем или добавляем новые кнопки
+        if (inlineKeyboardRequestDTO.buttons() != null) {
+            for (InlineButtonRequestDTO buttonDTO : inlineKeyboardRequestDTO.buttons()) {
+                if (buttonDTO.id() != null) {
+                    // Используем ButtonService для обновления кнопок
+                    inlineButtonService.update(buttonDTO);
+                } else {
+                    // Используем ButtonService для создания новых кнопок
+                    InlineButtonEntity newButton = inlineButtonService.create(existingKeyboard, buttonDTO);
+                    existingButtons.add(newButton);
+                }
+            }
         }
 
         // Сохраняем обновленную клавиатуру
@@ -108,6 +105,7 @@ public class InlineKeyboardServiceImpl implements InlineKeyboardService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         InlineKeyboardEntity inlineKeyboardEntity = inlineKeyboardRepository.findById(id).orElseThrow(
                 () -> new ApiException(ApiErrorType.NOT_FOUND, "Inline keyboard not found"));
@@ -115,6 +113,7 @@ public class InlineKeyboardServiceImpl implements InlineKeyboardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public InlineKeyboardResponseDTO findById(Long id) {
         InlineKeyboardEntity inlineKeyboardEntity = inlineKeyboardRepository.findById(id).orElseThrow(
                 () -> new ApiException(ApiErrorType.NOT_FOUND, "Inline keyboard not found"));
@@ -122,6 +121,7 @@ public class InlineKeyboardServiceImpl implements InlineKeyboardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<InlineKeyboardResponseDTO> findAll() {
         List<InlineKeyboardEntity> inlineKeyboardEntities = inlineKeyboardRepository.findAll();
         if (inlineKeyboardEntities.isEmpty()) {
@@ -147,4 +147,11 @@ public class InlineKeyboardServiceImpl implements InlineKeyboardService {
         return null;  // Или выбросить исключение, если требуется
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public InlineKeyboardEntity getById(Long id) {
+        InlineKeyboardEntity inlineKeyboardEntity = inlineKeyboardRepository.findById(id).orElseThrow(
+                () -> new ApiException(ApiErrorType.NOT_FOUND, "Inline keyboard not found"));
+        return inlineKeyboardEntity;
+    }
 }
