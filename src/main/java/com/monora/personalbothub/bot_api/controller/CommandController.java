@@ -31,7 +31,7 @@ public class CommandController {
     /**
      * Получение всех команд
      */
-    @GetMapping("/all")
+    @GetMapping
     public ResponseEntity<List<CommandResponseDTO>> getAllCommands() {
         log.info("Fetching all commands");
         List<CommandResponseDTO> commands = commandService.findAll();
@@ -51,7 +51,7 @@ public class CommandController {
     /**
      * Обновление команды по ID, включая обновление клавиатуры
      */
-    @PutMapping("/update/{id}")
+    @PutMapping("{id}")
     public ResponseEntity<CommandResponseDTO> updateCommand(@PathVariable Long id, @RequestBody CommandRequestDTO commandRequestDTO) {
         log.info("Received request to update command with ID: {}", id);
         CommandResponseDTO updatedCommand = commandService.update(id, commandRequestDTO);
@@ -61,7 +61,7 @@ public class CommandController {
     /**
      * Удаление команды по ID
      */
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("{id}")
     public ResponseEntity<Void> deleteCommand(@PathVariable Long id) {
         log.info("Received request to delete command with ID: {}", id);
         commandService.delete(id);

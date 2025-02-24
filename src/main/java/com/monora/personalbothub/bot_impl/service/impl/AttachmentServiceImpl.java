@@ -11,13 +11,16 @@ import com.monora.personalbothub.bot_db.entity.attachment.KeyboardAttachmentEnti
 import com.monora.personalbothub.bot_db.repository.AttachmentRepository;
 import com.monora.personalbothub.bot_db.repository.CommandRepository;
 import com.monora.personalbothub.bot_impl.mapper.AttachmentMapper;
+import com.monora.personalbothub.bot_impl.mapper.KeyboardMapper;
 import com.monora.personalbothub.bot_impl.service.AttachmentService;
 import com.monora.personalbothub.bot_impl.service.InlineKeyboardService;
 import com.monora.personalbothub.bot_impl.service.KeyboardService;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 @Transactional
@@ -28,6 +31,7 @@ public class AttachmentServiceImpl implements AttachmentService {
     private final AttachmentMapper attachmentMapper;
     private final KeyboardService keyboardService;
     private final InlineKeyboardService inlineKeyboardService;
+
 
     @Override
     public AttachmentEntity create(AttachmentRequestDTO requestDTO) {
@@ -74,6 +78,12 @@ public class AttachmentServiceImpl implements AttachmentService {
     public AttachmentResponseDTO getById(Long id) {
         AttachmentEntity attachmentEntity = attachmentRepository.findById(id).orElseThrow(
                 () -> new ApiException(ApiErrorType.NOT_FOUND, "Attachment not found"));
+//        if (attachmentEntity.getType().equals("INLINE_KEYBOARD")) {
+//            return attachmentMapper.toInlineKeyboardEntity(attachmentEntity);
+//        } else if (attachmentEntity.getType().equals("KEYBOARD")) {
+//            return attachmentMapper.toKeyboardEntity(attachmentEntity);
+//        }
+        log.info("attachmentEntity: {}", attachmentEntity);
 
         return attachmentMapper.toResponseDTO(attachmentEntity);
     }

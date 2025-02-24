@@ -15,7 +15,7 @@ import lombok.Setter;
 public class InlineKeyboardAttachmentEntity extends AttachmentEntity {
 
     @ManyToOne
-    @JoinColumn(name = "inline_keyboard_id", nullable = true, insertable = false, updatable = false)
+    @JoinColumn(name = "inline_keyboard_id", nullable = true)
     private InlineKeyboardEntity inlineKeyboard;
 
 }

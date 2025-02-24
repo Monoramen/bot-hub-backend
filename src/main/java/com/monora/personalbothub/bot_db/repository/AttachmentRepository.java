@@ -1,7 +1,10 @@
 package com.monora.personalbothub.bot_db.repository;
 
 import com.monora.personalbothub.bot_db.entity.attachment.AttachmentEntity;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,4 +15,5 @@ public interface AttachmentRepository extends JpaRepository<AttachmentEntity, Lo
     List<AttachmentEntity> findAll();
 
     Optional<AttachmentEntity> findByCommandId(Long commandId);
+
 }

@@ -2,41 +2,28 @@ package com.monora.personalbothub.bot_impl.mapper;
 
 import com.monora.personalbothub.bot_api.dto.request.AttachmentRequestDTO;
 import com.monora.personalbothub.bot_api.dto.response.AttachmentResponseDTO;
+import com.monora.personalbothub.bot_api.dto.response.InlineKeyboardAttachmentResponseDTO;
+import com.monora.personalbothub.bot_api.dto.response.KeyboardAttachmentResponseDTO;
 import com.monora.personalbothub.bot_db.entity.attachment.AttachmentEntity;
 import com.monora.personalbothub.bot_db.entity.attachment.InlineKeyboardAttachmentEntity;
 import com.monora.personalbothub.bot_db.entity.attachment.KeyboardAttachmentEntity;
-import com.monora.personalbothub.bot_db.entity.attachment.inlinekeyboard.InlineKeyboardEntity;
-import com.monora.personalbothub.bot_db.entity.attachment.keyboard.KeyboardEntity;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.SubclassMapping;
 
-@Mapper(componentModel = "spring", uses = {KeyboardMapper.class, InlineKeyboardMapper.class})
+@Mapper(componentModel = "spring",
+        uses = {KeyboardMapper.class, InlineKeyboardMapper.class})
 public interface AttachmentMapper {
 
-    @Mapping(target = "command.id", source = "commandId")
-    @Mapping(target = "type", source = "type")
-    @Mapping(target = "keyboard.id", source = "keyboardId")
-    KeyboardAttachmentEntity toKeyboardEntity(AttachmentRequestDTO dto);
-
-    @Mapping(target = "command.id", source = "commandId")
-    @Mapping(target = "type", source = "type")
-    @Mapping(target = "inlineKeyboard.id", source = "inlineKeyboardId")
-    InlineKeyboardAttachmentEntity toInlineKeyboardEntity(AttachmentRequestDTO dto);
-
-    // Убедитесь, что свойства соответствуют AttachmentEntity
+    @SubclassMapping(source = InlineKeyboardAttachmentEntity.class, target = InlineKeyboardAttachmentResponseDTO.class)
+    @SubclassMapping(source = KeyboardAttachmentEntity.class, target = KeyboardAttachmentResponseDTO.class)
     AttachmentResponseDTO toResponseDTO(AttachmentEntity entity);
 
-//    default KeyboardEntity map(Long keyboardId) {
-//        if (keyboardId == null) {
-//            return null;
-//        }
-//        return KeyboardEntity.builder().id(keyboardId).build();
-//    }
-//
-//    default InlineKeyboardEntity mapInline(Long inlineKeyboardId) {
-//        if (inlineKeyboardId == null) {
-//            return null;
-//        }
-//        return InlineKeyboardEntity.builder().id(inlineKeyboardId).build();
-//    }
+    @Mapping(target = "commandId", source = "command.id")
+    @Mapping(target = "inlineKeyboard", source = "inlineKeyboard")
+    InlineKeyboardAttachmentResponseDTO toInlineDto(InlineKeyboardAttachmentEntity entity);
+
+    @Mapping(target = "commandId", source = "command.id")
+    @Mapping(target = "keyboard", source = "keyboard")
+    KeyboardAttachmentResponseDTO toKeyboardDto(KeyboardAttachmentEntity entity);
 }
