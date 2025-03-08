@@ -1,9 +1,12 @@
 package com.monora.personalbothub.bot_api.controller;
 
+import com.monora.personalbothub.bot_api.dto.request.TelegramAuthRequestDTO;
 import com.monora.personalbothub.bot_impl.configuration.TelegramBotConfig;
-import jakarta.annotation.Resource;
+
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,13 +23,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 @RestController
 @RequestMapping("/auth/telegram")
 @AllArgsConstructor
-
+@Slf4j
 public class TelegramAuthController {
     private final TelegramBotConfig telegramBotConfig;
 
     @GetMapping
     public ResponseEntity<Resource> getAuthScript() {
-        Resource resource = (Resource) new ClassPathResource("static/tgAuth.html");
+        Resource resource = new ClassPathResource("static/tgAuth.html");
         var headers = new HttpHeaders();
         headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=tgAuth.html");
         return ResponseEntity.ok().headers(headers).body(resource);
@@ -34,6 +37,17 @@ public class TelegramAuthController {
 
     @PostMapping("/token")
     public String authenticate(@RequestBody Map<String, Object> telegramData) {
+        System.out.println("Received data: " + telegramData); // Log the received data
+        TelegramAuthRequestDTO authRequestDTO = new TelegramAuthRequestDTO(
+                (Long) telegramData.get("id"),
+                (String) telegramData.get("first_name"),
+                (String) telegramData.get("last_name"),
+                (String) telegramData.get("username"),
+
+                (String) telegramData.get("photo_url"),
+                (Long) telegramData.get("auth_date"),
+                (String) telegramData.get("hash"));
+        log.info("Received Auth request:\n " + authRequestDTO);
         return telegramDataIsValid(telegramData) ? "pretend-that-it-is-your-token" : "error";
     }
 
