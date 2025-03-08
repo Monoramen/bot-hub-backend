@@ -57,7 +57,7 @@ public class MessageHandler implements UpdateHandler {
 
         } catch (ApiException e) {
             log.error("Ошибка обработки команды '{}': {}", text, e.getMessage());
-            SendMessage errorMessage = new SendMessage(chatId, "Команда не найдена: " + text);
+            SendMessage errorMessage = new SendMessage(chatId, "Команда не найдена s: " + text);
             telegramBot.execute(errorMessage);
         }
     }

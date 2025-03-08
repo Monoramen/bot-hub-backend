@@ -29,14 +29,13 @@ public interface CommandMapper {
 
     // Преобразуем Set<Long> attachmentIds в Set<AttachmentEntity>
     default Set<AttachmentEntity> mapAttachmentIds(Set<Long> attachmentIds) {
-
         return attachmentIds.stream()
                 .map(id -> attachmentRepository.findById(id) // Получаем AttachmentEntity по ID
                         .orElseThrow(() -> new EntityNotFoundException("Attachment not found for ID: " + id)))
                 .collect(Collectors.toSet());
     }
 
-    // Преобразуем Set<AttachmentEntity> в Set<Long>
+
     default Set<Long> mapAttachmentsToIds(Set<AttachmentEntity> attachments) {
         return attachments.stream()
                 .map(AttachmentEntity::getId)

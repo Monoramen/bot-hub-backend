@@ -8,5 +8,4 @@ public enum AttachmentTypeEnum {
     AUDIO,             // Аудио
     IMAGE,             // Изображение
     DOCUMENT,          // Документ
-    // Добавьте другие типы по мере необходимости
 }

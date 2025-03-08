@@ -1,6 +1,5 @@
 package com.monora.personalbothub.bot_impl.mapper;
 
-import com.monora.personalbothub.bot_api.dto.request.AttachmentRequestDTO;
 import com.monora.personalbothub.bot_api.dto.response.AttachmentResponseDTO;
 import com.monora.personalbothub.bot_api.dto.response.InlineKeyboardAttachmentResponseDTO;
 import com.monora.personalbothub.bot_api.dto.response.KeyboardAttachmentResponseDTO;
@@ -10,6 +9,8 @@ import com.monora.personalbothub.bot_db.entity.attachment.KeyboardAttachmentEnti
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.SubclassMapping;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring",
         uses = {KeyboardMapper.class, InlineKeyboardMapper.class})
@@ -26,4 +27,6 @@ public interface AttachmentMapper {
     @Mapping(target = "commandId", source = "command.id")
     @Mapping(target = "keyboard", source = "keyboard")
     KeyboardAttachmentResponseDTO toKeyboardDto(KeyboardAttachmentEntity entity);
+
+    List<AttachmentResponseDTO> toResponseDTOList(List<AttachmentEntity> entities);
 }

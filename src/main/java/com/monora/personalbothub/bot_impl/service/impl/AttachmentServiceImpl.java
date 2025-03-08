@@ -11,7 +11,6 @@ import com.monora.personalbothub.bot_db.entity.attachment.KeyboardAttachmentEnti
 import com.monora.personalbothub.bot_db.repository.AttachmentRepository;
 import com.monora.personalbothub.bot_db.repository.CommandRepository;
 import com.monora.personalbothub.bot_impl.mapper.AttachmentMapper;
-import com.monora.personalbothub.bot_impl.mapper.KeyboardMapper;
 import com.monora.personalbothub.bot_impl.service.AttachmentService;
 import com.monora.personalbothub.bot_impl.service.InlineKeyboardService;
 import com.monora.personalbothub.bot_impl.service.KeyboardService;
@@ -19,6 +18,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -61,12 +62,12 @@ public class AttachmentServiceImpl implements AttachmentService {
     }
 
     @Override
-    public AttachmentResponseDTO update(AttachmentRequestDTO dto) {
-        AttachmentEntity existingAttachment = attachmentRepository.findById(dto.id()).orElseThrow(
+    public AttachmentResponseDTO update(Long id,AttachmentRequestDTO dto) {
+        AttachmentEntity existingAttachment = attachmentRepository.findById(id).orElseThrow(
                 () -> new ApiException(ApiErrorType.NOT_FOUND, "Attachment not found")
         );
         existingAttachment.setType(existingAttachment.getType());
-        existingAttachment.setCommand(commandRepository.findById(dto.id()).orElseThrow(
+        existingAttachment.setCommand(commandRepository.findById(id).orElseThrow(
                 () -> new ApiException(ApiErrorType.NOT_FOUND, "Attachment not found")
         ));
 
@@ -78,11 +79,6 @@ public class AttachmentServiceImpl implements AttachmentService {
     public AttachmentResponseDTO getById(Long id) {
         AttachmentEntity attachmentEntity = attachmentRepository.findById(id).orElseThrow(
                 () -> new ApiException(ApiErrorType.NOT_FOUND, "Attachment not found"));
-//        if (attachmentEntity.getType().equals("INLINE_KEYBOARD")) {
-//            return attachmentMapper.toInlineKeyboardEntity(attachmentEntity);
-//        } else if (attachmentEntity.getType().equals("KEYBOARD")) {
-//            return attachmentMapper.toKeyboardEntity(attachmentEntity);
-//        }
         log.info("attachmentEntity: {}", attachmentEntity);
 
         return attachmentMapper.toResponseDTO(attachmentEntity);
@@ -104,4 +100,12 @@ public class AttachmentServiceImpl implements AttachmentService {
         attachmentRepository.delete(attachmentEntity);
     }
 
+    @Override
+    public List<AttachmentResponseDTO> findAll() {
+        List<AttachmentEntity> attachmentEntity = attachmentRepository.findAll();
+        if (attachmentEntity.isEmpty()) {
+            throw new ApiException(ApiErrorType.NOT_FOUND, "Attachments is empty");
+        }
+        return attachmentMapper.toResponseDTOList(attachmentEntity);
+    }
 }

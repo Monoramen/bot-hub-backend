@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/attachments")
 @RequiredArgsConstructor
@@ -18,16 +20,22 @@ public class AttachmentController {
     private final AttachmentService attachmentService;
     private final AttachmentMapper attachmentMapper;
 
-    @PostMapping
+    @PostMapping("/add")
     public ResponseEntity<AttachmentResponseDTO> createAttachment(@RequestBody AttachmentRequestDTO requestDTO) {
         AttachmentEntity attachmentEntity = attachmentService.create(requestDTO);
         AttachmentResponseDTO responseDTO = attachmentMapper.toResponseDTO(attachmentEntity);
         return new ResponseEntity<>(responseDTO, HttpStatus.CREATED);
     }
 
+    @GetMapping
+    public ResponseEntity<List<AttachmentResponseDTO>> getAllCommands() {
+        List<AttachmentResponseDTO> attachments = attachmentService.findAll();
+        return ResponseEntity.ok(attachments);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<AttachmentResponseDTO> updateAttachment(@PathVariable Long id, @RequestBody AttachmentRequestDTO requestDTO) {
-        AttachmentResponseDTO responseDTO = attachmentService.update(requestDTO);
+        AttachmentResponseDTO responseDTO = attachmentService.update(id, requestDTO);
         return ResponseEntity.ok(responseDTO);
     }
 
