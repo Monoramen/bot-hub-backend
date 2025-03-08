@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ..  # Контекст — корень проекта
+      dockerfile: app/Dockerfile
+    ports:
+      - "9090:9090"
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}  # Из .env
+      - APP_PORT=${APP_PORT}                     # Из .env
+    env_file:
+      - ./.env  # Загружаем .env в окружение
+    networks:
+      - bot-network
+    depends_on:
+      - database
+
+  database:
+    image: postgres
+    ports:
+      - "5001:5432"
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-personal-bot-hub:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Подключение скрипта
+    env_file:
+      - ./.env  # Загружаем .env для NGROK_AUTHTOKEN
+    networks:
+      - bot-network
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - database
+    networks:
+      - bot-network
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: always
+    command:
+      - "start"
+      - "app"
+      - "--authtoken"
+      - "${NGROK_AUTHTOKEN}"
+      - "--config"
+      - "/etc/ngrok.yml"
+    volumes:
+      - ./ngrok.yml:/etc/ngrok.yml
+    env_file:
+      - ./.env  # Загружаем .env для NGROK_AUTHTOKEN
+    networks:
+      - bot-network
+
+
+volumes:
+  postgres-personal-bot-hub:
+    name: postgres-personal-bot-hub
+    external: true
+
+networks:
+  bot-network:
+    name: bot-network
+    external: true

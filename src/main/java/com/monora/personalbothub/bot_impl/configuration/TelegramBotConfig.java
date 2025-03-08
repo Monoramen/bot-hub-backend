@@ -26,4 +26,9 @@ public class TelegramBotConfig {
         return new TelegramBot(token);
     }
 
+
+    public String getToken() {
+        return token;
+    }
+
 }
