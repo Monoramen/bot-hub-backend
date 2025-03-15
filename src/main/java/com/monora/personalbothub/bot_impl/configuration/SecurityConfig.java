@@ -31,7 +31,7 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:3000") // Укажите адрес вашего клиента
+                        .allowedOrigins("http://localhost:3000", "https://0fc5-89-185-85-36.ngrok-free.app") // Укажите адрес вашего клиента
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);

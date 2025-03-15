@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build:
@@ -62,8 +60,30 @@ services:
       - ./.env  # Загружаем .env для NGROK_AUTHTOKEN
     networks:
       - bot-network
+  frontend:
+    build:
+      context: ../path-to-your-frontend-repo  # Укажите путь к репозиторию фронтенда
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:9090  # Пример переменной окружения для API
+    networks:
+      - bot-network
+    depends_on:
+      - app
 
-
+  cloudflare-tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare-tunnel
+    command: tunnel --no-autoupdate run
+    environment:
+      - TUNNEL_TOKEN=<ваш_tunnel_token>  # Токен туннеля (см. шаг 2)
+    volumes:
+      - ./cloudflared:/etc/cloudflared  # Папка для хранения конфигурации
+    networks:
+      - bot-network
+    restart: unless-stopped
 volumes:
   postgres-personal-bot-hub:
     name: postgres-personal-bot-hub
