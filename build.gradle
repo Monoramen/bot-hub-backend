@@ -13,6 +13,17 @@ java {
     }
 }
 
+
+compileJava {
+    options.annotationProcessorPath = configurations.annotationProcessor
+
+    // Убедитесь, что Lombok обрабатывается перед MapStruct
+    options.compilerArgs = [
+            '-Amapstruct.defaultComponentModel=spring',
+            '-Amapstruct.unmappedTargetPolicy=IGNORE'
+    ]
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor
@@ -24,31 +35,63 @@ repositories {
 }
 
 dependencies {
+    // Spring-boot-starter imports
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+    developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    // JWT imports
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+
+    // Telegram imports
     implementation 'com.github.pengrad:java-telegram-bot-api:7.11.0'
     implementation 'jakarta.validation:jakarta.validation-api:3.1.0'
 
-    compileOnly 'org.projectlombok:lombok:1.18.36'
-    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+
 
     runtimeOnly 'org.postgresql:postgresql'
     implementation 'org.liquibase:liquibase-core'
-
-    implementation 'org.slf4j:slf4j-api:2.0.16'
     implementation 'org.hibernate.validator:hibernate-validator:8.0.0.Final'
 
+    implementation 'org.slf4j:slf4j-api:2.0.16'
+
+
+
     implementation 'org.json:json:20240303'
+
+    //Serial
+    implementation 'com.digitalpetri.modbus:modbus-serial:2.1.0'
+    implementation 'com.fazecast:jSerialComm:2.11.0'
+    implementation 'io.netty:netty-all:4.2.0.Final'
+
+    compileOnly 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor 'org.projectlombok:lombok:1.18.36'
+    annotationProcessor "org.projectlombok:lombok-mapstruct-binding:0.2.0"
+
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
     annotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
     testAnnotationProcessor "org.mapstruct:mapstruct-processor:${mapstructVersion}"
 
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
-    annotationProcessor 'org.projectlombok:lombok'
+
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.0'
+
+	testCompileOnly 'org.projectlombok:lombok:1.18.36'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.36'
+
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'io.rest-assured:rest-assured'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.8'
+    implementation 'io.micrometer:micrometer-registry-prometheus:1.14.4'
+
 }
 
 //tasks.named('test') {
@@ -56,5 +99,5 @@ dependencies {
 //}
 
 tasks.named('bootJar') {
-    archiveFileName = 'personal-bot-hub.jar'  // Имя выходного JAR-файла
+    archiveFileName = 'bot-hub-backend.jar'  // Имя выходного JAR-файла
 }

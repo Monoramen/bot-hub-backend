@@ -15,11 +15,10 @@ public class SecurityConfig {
     public SecurityFilterChain securedFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
-//                        .requestMatchers("/commands/**").permitAll() // Доступ для всех к /commands/**
-//                        .anyRequest().authenticated()               // Аутентификация для других маршрутов
-                        .anyRequest().permitAll() // Отключаем аутентификацию для всех маршрутов
+                        .requestMatchers("/**").permitAll()  // Разрешаем доступ к Actuator
+                        .anyRequest().authenticated()  // Остальные запросы требуют аутентификации
                 )
-                .csrf(csrf -> csrf.disable())                   // Отключить CSRF для REST-запросов
+                .csrf(csrf -> csrf.disable())  // Отключаем CSRF для REST-запросов
                 .httpBasic(Customizer.withDefaults())
                 .formLogin(Customizer.withDefaults());
         return http.build();
@@ -31,13 +30,11 @@ public class SecurityConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:3000", "https://0fc5-89-185-85-36.ngrok-free.app") // Укажите адрес вашего клиента
+                        .allowedOrigins("http://localhost:3000") // Укажите адрес вашего клиента
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
             }
         };
     }
-
-
 }

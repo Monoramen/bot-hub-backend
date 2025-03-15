@@ -1,7 +1,6 @@
 package com.monora.personalbothub.bot_api.exception;
 
 public class ApiException extends RuntimeException {
-    public static final long serialVersionUID = 1L;
     private final ApiErrorType errorType;
 
     public ApiException(ApiErrorType errorType, String errorMessage) {

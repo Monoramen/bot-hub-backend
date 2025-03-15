@@ -3,6 +3,10 @@ server:
 
 
 spring:
+  security:
+    user:
+      name: admin
+      password: admin
   application:
     name: personal-bot-hub
   datasource:
@@ -20,6 +24,9 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     generate-ddl: true
     show-sql: true
+  token:
+    signing:
+      key: 53A73E5F1C4E0A2D3B5F2D784E6A1B423D6F247D1F6E5C3A596D635A75327855
 
   liquibase:
     enabled: false
@@ -41,7 +48,33 @@ telegram:
     token: ${TELEGRAM_BOT_TOKEN}
     name: bothub
 
+  management:
+    endpoint:
+      health:
+        enabled: true
+      prometheus:
+        enabled: true
+    endpoints:
+      web:
+        exposure:
+          include: "*"  # Открыть все эндпоинты Actuator
+    security:
+      enabled: true  # Включить аутентификацию для Actuator
+  logging:
+    level:
+      root: INFO  # Уровень логирования для всех пакетов
+      com.pengrad.telegrambot: DEBUG  # Уровень логирования для библиотеки Telegram Bot
+      org.springframework.web: DEBUG  # Уровень логирования для Spring Web
+      org.hibernate.SQL: DEBUG  # Логирование SQL-запросов
+      org.hibernate.type.descriptor.sql.BasicBinder: TRACE  # Логирование параметров SQL-запросов
 
-logging:
-  level:
-    com.pengrad.telegrambot: DEBUG
+springdoc:
+  api-docs:
+    path: /v3/api-docs  # Стандартный путь к JSON OpenAPI
+  swagger-ui:
+    path: /swagger-ui.html  # Открывается по этому адресу
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
+  default-produces-media-type: application/json
+  packages-to-scan: com.monora.personalbothub.bot_api.controller
