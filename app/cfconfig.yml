@@ -1,7 +1,0 @@
-tunnel: mn-tunnel
-credentials-file: C:\cloudflared\mn-tunnel.json
-
-ingress:
-  - hostname: monoramen.ru  # Ваш домен
-    service: http://localhost:3000  # Укажите порт вашего сервера
-  - service: http_status:404  # Для всех остальных запросов
