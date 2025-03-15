@@ -1,6 +1,5 @@
 package com.monora.personalbothub.bot_impl.mapper;
 
-import com.monora.personalbothub.bot_api.controller.InlineButtonController;
 import com.monora.personalbothub.bot_api.dto.request.CommandRequestDTO;
 import com.monora.personalbothub.bot_api.dto.response.CommandResponseDTO;
 import com.monora.personalbothub.bot_db.entity.CommandEntity;
