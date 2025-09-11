@@ -1,19 +1,16 @@
 package com.monora.personalbothub.bot_impl.util.modbus;
 
 import com.digitalpetri.modbus.client.ModbusRtuClient;
-import com.digitalpetri.modbus.pdu.*;
+import com.digitalpetri.modbus.pdu.ReadHoldingRegistersRequest;
+import com.digitalpetri.modbus.pdu.ReadHoldingRegistersResponse;
+import com.monora.personalbothub.bot_impl.util.modbus.enums.ConfigParameter;
 import com.monora.personalbothub.bot_impl.util.modbus.enums.RuntimeParameter;
-import com.monora.personalbothub.bot_impl.util.modbus.enums.TechProgramParameter;
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import jakarta.annotation.PostConstruct;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -90,7 +87,7 @@ public class ModbusClientReader {
 //
 //        log.info("Загружено {} параметров", results.size());
 //        return results;
- //   }
+    //   }
 
 //    public Map<String, Object> loadProgram(int programNumber, int unitId) {
 //        if (!connectionManager.isConnected()) {
@@ -204,19 +201,16 @@ public class ModbusClientReader {
     /**
      * Совместимость: метод для чтения температуры
      */
-    public float readTemperature() {
+    public float readTemperature(int unitId) {
         RuntimeParameter tempParam = parameterRegistry.getRuntimeParameter("rEAd");
         if (tempParam == null) {
             log.error("Параметр rEAd не найден в реестре");
             return 0;
         }
-
-        int tempAddress = 0x0004; // rEAd (Float32)
         int quantity = 2;
-        int unitId = 16;
 
         try {
-            Optional<byte[]> result = readRegisters(tempAddress, quantity, unitId);
+            Optional<byte[]> result = readRegisters(RuntimeParameter.READ.getAddress(), quantity, unitId);
             if (result.isPresent()) {
                 byte[] registers = result.get();
                 byte[] swapped = new byte[4];
@@ -237,10 +231,6 @@ public class ModbusClientReader {
         }
         return 0;
     }
-
-
-
-
 
     private void applyReadDelay() {
         if (RETRY_DELAY_MS > 0) {

@@ -7,11 +7,10 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import java.time.LocalDateTime;
 
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public record TemperatureResponseDTO(
+public record TemperatureDeviceResponseDTO(
         @JsonFormat(locale = "yyyy-MM-dd HH:mm:ss")
         LocalDateTime timestamp, // дата и время
-        float temperature,
-        Long sessionId
+        float temperature
 ) {
 }
 

@@ -5,6 +5,7 @@ import com.monora.personalbothub.bot_api.dto.request.FiringStepRequestDTO;
 import com.monora.personalbothub.bot_api.dto.response.FiringProgramResponseDTO;
 import com.monora.personalbothub.bot_api.dto.response.FiringStepResponseDTO;
 import com.monora.personalbothub.bot_db.entity.modbus.FiringProgramEntity;
+import com.monora.personalbothub.bot_db.entity.modbus.FiringProgramHistoryEntity;
 import com.monora.personalbothub.bot_db.entity.modbus.FiringStep;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -20,11 +21,16 @@ public interface FiringProgramMapper {
     @Mapping(target = "id", ignore = true)
     FiringProgramEntity toEntity(FiringProgramRequestDTO dto);
 
+    @Mapping(target = "id", ignore = true)
+    FiringProgramHistoryEntity toEntityHistory(FiringProgramResponseDTO dto);
+
     // --------------------- TO DTO -----------------------
 
     FiringProgramResponseDTO toResponseDTO(FiringProgramEntity entity);
+    FiringProgramResponseDTO toResponseHistoryDTO(FiringProgramHistoryEntity entity);
 
     List<FiringProgramResponseDTO> toResponseDTOList(List<FiringProgramEntity> entities);
+    List<FiringProgramResponseDTO> toResponseHistoryDTOList(List<FiringProgramHistoryEntity> entities);
 
     // --------------------- DEFAULT METHODS ---------------
 

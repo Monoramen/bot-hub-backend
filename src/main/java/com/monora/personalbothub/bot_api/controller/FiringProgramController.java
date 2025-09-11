@@ -75,7 +75,6 @@ public class FiringProgramController {
         return ResponseEntity.ok().build();
     }
 
-
     @GetMapping("/device/parameters/all")
     public ResponseEntity<List<FiringProgramResponseDTO>> getAllDeviceParameters(
             @RequestParam(value = "unitId", defaultValue = "16") int unitId) {
@@ -89,35 +88,23 @@ public class FiringProgramController {
             @PathVariable("programNumber") Integer programNumber,
             @RequestParam(value = "unitId", defaultValue = "16") int unitId) {
 
-
-
         FiringProgramResponseDTO response = firingProgramService.getOneTechProgramParametersAsFiringProgramDTO(programNumber,unitId);
-
-
 
         return ResponseEntity.ok(response);
     }
 
-
-
     @PostMapping("/{id}/deploy")
     public ResponseEntity<String> deployProgramToDevice(
             @PathVariable("id") Integer id,
-            @RequestParam("deviceProgramId") int deviceProgramId, // 1, 2 или 3
+            @RequestParam("deviceProgramId") int deviceProgramId,
             @RequestParam(value = "unitId", defaultValue = "16") int unitId) {
 
         FiringProgramResponseDTO program = firingProgramService.findById(id);
 
-        // Если программа не найдена, выбрасываем исключение.
         if (program == null) {
             throw new ApiException(ApiErrorType.NOT_FOUND, "Программа с ID " + id + " не найдена.");
         }
-
-        // Просто вызываем метод. Если будет ошибка, он выбросит исключение,
-        // которое обработает ваш ExceptionHandlerController.
         programWriterService.writeFiringProgram(program, deviceProgramId, unitId);
-
-        // Если выполнение дошло до этой строки, значит, операция успешна.
         return ResponseEntity.ok("Программа успешно записана в слот P" + deviceProgramId);
     }
 
