@@ -1,9 +1,13 @@
-FROM gradle:8.5-jdk17 AS builder
-COPY --chown=gradle:gradle . /home/gradle/project
-WORKDIR /home/gradle/project
-RUN gradle build --no-daemon
+# Stage 1: Build the application
+FROM openjdk:23-jdk-slim AS builder
+WORKDIR /trm-251-firing-manager
+COPY . .
+# Add this line to give the gradlew script execute permissions
+RUN chmod +x gradlew
+RUN ./gradlew build --no-daemon
 
+# Stage 2: Create the final production image
 FROM openjdk:23-jdk-slim
 WORKDIR /trm-251-firing-manager
-COPY /build/libs/bot-hub-backend.jar backend.jar
+COPY --from=builder /trm-251-firing-manager/build/libs/bot-hub-backend.jar backend.jar
 ENTRYPOINT ["java", "-jar", "backend.jar"]
