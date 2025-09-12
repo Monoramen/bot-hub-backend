@@ -4,6 +4,7 @@ WORKDIR /trm-251-firing-manager
 COPY . .
 # Add this line to give the gradlew script execute permissions
 RUN chmod +x gradlew
+RUN ./gradlew clean
 RUN ./gradlew build --no-daemon
 
 # Stage 2: Create the final production image
