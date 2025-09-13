@@ -1,6 +1,8 @@
 package com.monora.personalbothub.bot_impl.service.impl;
 import com.monora.personalbothub.bot_api.dto.response.FiringProgramResponseDTO;
 import com.monora.personalbothub.bot_api.dto.response.FiringSessionResponseDTO;
+import com.monora.personalbothub.bot_api.dto.response.SessionDataResponseDTO;
+import com.monora.personalbothub.bot_api.dto.response.TemperatureResponseDTO;
 import com.monora.personalbothub.bot_api.exception.ApiErrorType;
 import com.monora.personalbothub.bot_api.exception.ApiException;
 import com.monora.personalbothub.bot_db.entity.modbus.FiringProgramHistoryEntity;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -34,13 +37,11 @@ public class FiringSessionService {
 
     private final FiringSessionRepository firingSessionRepository;
     private final FiringProgramHistoryRepository firingProgramHistoryRepository;
-    private final TechProgramWriteParameterService writeParameterService;
     private final TechProgramReadParameterService readParameterService;
     private final FiringProgramService firingProgramService;
     private final FiringSessionMapper firingSessionMapper;
     private final FiringProgramMapper firingProgramMapper;
     private final TemperatureService temperatureService;
-
     /**
      * Создает и сохраняет новый сеанс обжига.
      * @param programNumber Программа обжига, которая будет выполняться.
@@ -182,5 +183,50 @@ public class FiringSessionService {
         log.debug("🌡️ Записана температура {}°C для сессии {}", temperatureValue, session.getId());
     }
 
+
+    // Получить сессию с программой
+    public Optional<FiringSessionEntity> getSessionWithProgram(Long sessionId) {
+        return firingSessionRepository.findWithProgramById(sessionId);
+    }
+
+    // Получить все показания температуры
+    public List<TemperatureEntity> getAllTemperatureReadings(Long sessionId) {
+        return firingSessionRepository.findTemperatureReadingsBySessionId(sessionId);
+    }
+
+    @Transactional(readOnly = true)
+    public SessionDataResponseDTO getSessionDataDTO(Long sessionId) {
+        FiringSessionEntity session = getSessionWithProgram(sessionId)
+                .orElseThrow(() -> new RuntimeException("Session not found: " + sessionId));
+
+        List<TemperatureEntity> allTemps = getAllTemperatureReadings(sessionId);
+        // latestTemp не нужен — мы найдём его сами из allTemps
+
+        // 1. Получаем базовый DTO от MapStruct
+        SessionDataResponseDTO baseDto = firingSessionMapper.toSessionDataDto(session, allTemps);
+
+        // 2. Дорабатываем кастомные поля
+        Double maxTemp = firingSessionMapper.calculateMaxTemperature(allTemps);
+        TemperatureResponseDTO latestTemp = firingSessionMapper.findLatestValidTemperature(allTemps);
+
+        // 3. Создаём финальный DTO (если record не позволяет — создай билдер или изменяемый класс)
+        return new SessionDataResponseDTO(
+                baseDto.id(),
+                baseDto.program(),
+                baseDto.startTime(),
+                baseDto.endTime(),
+                baseDto.status(),
+                baseDto.actualDurationMinutes(),
+                maxTemp,
+                baseDto.temperatureReadings(), // ← уже отфильтровано и замаплено MapStruct
+                latestTemp
+        );
+    }
+    @Transactional(readOnly = true)
+    public FiringProgramResponseDTO getProgramDataForSession(Long sessionId) {
+        FiringProgramHistoryEntity program  = firingProgramHistoryRepository.findBySessionId(sessionId)
+                .orElseThrow(() -> new ApiException(ApiErrorType.NOT_FOUND, "Session not found: " + sessionId));
+        return firingProgramMapper.toResponseHistoryDTO(program);
+    }
 
 }

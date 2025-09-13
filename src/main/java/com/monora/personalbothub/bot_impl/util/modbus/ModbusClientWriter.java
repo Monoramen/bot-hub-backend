@@ -128,6 +128,8 @@ public class ModbusClientWriter {
         // Используем writeSingleCoil для записи в катушку
         return writeSingleCoil(RuntimeParameter.R_S.getAddress(), start, unitId);
     }
+
+
     public boolean selectTechProgram(int programNumber, int unitId) {
         if (programNumber < 1 || programNumber > 3) {
             log.error("Номер программы должен быть от 1 до 3. Получено: {}", programNumber);

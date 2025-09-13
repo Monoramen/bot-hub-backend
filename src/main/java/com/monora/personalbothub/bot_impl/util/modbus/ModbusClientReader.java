@@ -69,48 +69,6 @@ public class ModbusClientReader {
         return Optional.empty();
     }
 
-    /**
-     * Загрузка всех параметров
-     */
-//    public Map<String, Object> loadAllParameters(int unitId) {
-//        if (!connectionManager.isConnected()) {
-//            log.warn("Нет активного подключения к устройству, пропуск загрузки параметров");
-//            return new HashMap<>();
-//        }
-//
-//        Map<String, Object> results = new HashMap<>();
-//        // Загружаем TechProgramParameter
-//        for (TechProgramParameter param : TechProgramParameter.values()) {
-//            Optional<Object> value = readParameter(param.getHashCode(), param.getDataType(), unitId);
-//            value.ifPresent(v -> results.put(param.getName(), v));
-//        }
-//
-//        log.info("Загружено {} параметров", results.size());
-//        return results;
-    //   }
-
-//    public Map<String, Object> loadProgram(int programNumber, int unitId) {
-//        if (!connectionManager.isConnected()) {
-//            log.warn("Нет активного подключения к устройству, пропуск загрузки параметров");
-//            return new HashMap<>();
-//        }
-//
-//        // Создаем префикс для фильтрации (например, "P1.")
-//        String prefix = "P" + programNumber + ".";
-//
-//        // Фильтруем TechProgramParameter с помощью стрима
-//        Map<String, Object> results = Arrays.stream(TechProgramParameter.values())
-//                .filter(param -> param.getName().startsWith(prefix) || param.getName().equals("t.SCL"))
-//                .collect(Collectors.toMap(
-//                        TechProgramParameter::getName,
-//                        param -> readParameter(param.getHashCode(), param.getDataType(), unitId)
-//                                .orElse(null)
-//                ));
-//
-//        log.info("Загружено {} параметров для программы №{}", results.size(), programNumber);
-//        return results;
-//    }
-
 
     /**
      * Чтение одного параметра в зависимости от типа данных
@@ -232,6 +190,38 @@ public class ModbusClientReader {
         return 0;
     }
 
+    public Optional<Integer> readCurrentProgram(int unitId) {
+        // Используем прямое обращение к enum вместо реестра
+        RuntimeParameter programParam = RuntimeParameter.R_PRG;
+
+        log.debug("Чтение R_PRG: адрес=0x{}, unitId={}",
+                String.format("%04X", programParam.getAddress()), unitId);
+
+        try {
+            Optional<byte[]> result = readRegisters(programParam.getAddress(), 1, unitId);
+
+            if (result.isPresent()) {
+                byte[] registers = result.get();
+
+                // Детальное логирование
+                log.debug("Полученные байты: [0x{}, 0x{}]",
+                        String.format("%02X", registers[0]),
+                        String.format("%02X", registers[1]));
+
+                // Преобразование байтов в число
+                int programNumber = ((registers[0] & 0xFF) << 8) | (registers[1] & 0xFF);
+
+                log.info("Текущая программа: #{}", programNumber);
+                applyReadDelay();
+                return Optional.of(programNumber);
+            } else {
+                log.warn("readRegisters вернул empty для R_PRG");
+            }
+        } catch (Exception e) {
+            log.error("Ошибка чтения R_PRG: {}", e.getMessage(), e);
+        }
+        return Optional.empty();
+    }
     private void applyReadDelay() {
         if (RETRY_DELAY_MS > 0) {
             try {

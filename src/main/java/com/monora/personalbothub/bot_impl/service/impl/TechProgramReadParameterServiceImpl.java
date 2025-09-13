@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @Service
@@ -86,6 +87,20 @@ public class TechProgramReadParameterServiceImpl implements TechProgramReadParam
                 .orElseThrow(() -> new ApiException(ApiErrorType.NOT_FOUND, "Неизвестный статус: " + status));
 
         return CompletableFuture.completedFuture(firingStatus);
+    }
+
+
+    @Async("modbusExecutor")
+    @Override
+    public CompletableFuture<Optional<Integer>> readProgramNumberDevice(int unitId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return modbusClientReader.readCurrentProgram(unitId);
+            } catch (Exception e) {
+                log.error("Ошибка при чтении номера программы: {}", e.getMessage());
+                return Optional.empty();
+            }
+        });
     }
 
     @Override

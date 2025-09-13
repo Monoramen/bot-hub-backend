@@ -43,10 +43,7 @@ jwt:
       private: jwt/private_key
       public: jwt/public_key
 
-telegram:
-  bot:
-    token: ${TELEGRAM_BOT_TOKEN}
-    name: bothub
+
 
   management:
     endpoint:
@@ -63,7 +60,6 @@ telegram:
   logging:
     level:
       root: INFO  # Уровень логирования для всех пакетов
-      com.pengrad.telegrambot: DEBUG  # Уровень логирования для библиотеки Telegram Bot
       org.springframework.web: DEBUG  # Уровень логирования для Spring Web
       org.hibernate.SQL: DEBUG  # Логирование SQL-запросов
       org.hibernate.type.descriptor.sql.BasicBinder: TRACE  # Логирование параметров SQL-запросов

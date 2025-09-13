@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -48,6 +49,23 @@ public class FiringManagementController {
         } catch (InterruptedException | ExecutionException e) {
             log.error("Ошибка при получении статуса устройства: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @GetMapping("/current-program")
+    public ResponseEntity<Integer> getCurrentDeviceProgram(@RequestParam(value = "unitId", defaultValue = "16") int unitId) {
+        try {
+            CompletableFuture<Optional<Integer>> future = readService.readProgramNumberDevice(unitId);
+            Integer programNumber = future.get()
+                    .orElseThrow(() -> new RuntimeException("Программа не найдена"));
+
+            return ResponseEntity.ok(programNumber);
+        } catch (InterruptedException | ExecutionException e) {
+            log.error("Ошибка при получении программы устройства: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (RuntimeException e) {
+            log.error("Программа не найдена для unitId: {}", unitId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(-1);
         }
     }
 }

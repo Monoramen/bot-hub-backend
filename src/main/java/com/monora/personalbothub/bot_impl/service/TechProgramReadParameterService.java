@@ -12,4 +12,6 @@ public interface TechProgramReadParameterService {
     CompletableFuture<FiringStatus> readStatusDevice(int unitId);
     Optional<Double> readStoredDotParameterFromMap(Map<String, Object> parameters, String parameterName);
     Optional<Integer> readInt16ParameterFromMap(Map<String, Object> parameters, String parameterName);
+    CompletableFuture<Optional<Integer>> readProgramNumberDevice(int unitId);
+
 }

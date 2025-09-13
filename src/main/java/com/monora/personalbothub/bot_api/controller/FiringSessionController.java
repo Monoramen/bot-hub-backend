@@ -2,6 +2,10 @@ package com.monora.personalbothub.bot_api.controller;
 
 import com.monora.personalbothub.bot_api.dto.response.FiringProgramResponseDTO;
 import com.monora.personalbothub.bot_api.dto.response.FiringSessionResponseDTO;
+import com.monora.personalbothub.bot_api.dto.response.SessionDataResponseDTO;
+import com.monora.personalbothub.bot_db.entity.modbus.FiringProgramHistoryEntity;
+import com.monora.personalbothub.bot_db.repository.FiringProgramHistoryRepository;
+import com.monora.personalbothub.bot_impl.service.FiringProgramService;
 import com.monora.personalbothub.bot_impl.service.impl.FiringSessionService;
 import com.monora.personalbothub.bot_impl.service.impl.TemperatureService;
 import lombok.AllArgsConstructor;
@@ -19,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 public class FiringSessionController {
     private final TemperatureService temperatureService;
     private final FiringSessionService firingSessionService;
+
 
     /**
      * Запись значения в параметр технологической программы (тестовый endpoint)
@@ -53,13 +58,30 @@ public class FiringSessionController {
         return ResponseEntity.ok(dtos);
     }
 
-    @GetMapping("")
-    public ResponseEntity<FiringSessionResponseDTO> getRecentSessions(
-            @RequestParam(name = "sessionId") long sessionId) {
+
+    @GetMapping("/{sessionId}")
+    public ResponseEntity<FiringSessionResponseDTO> getSessionById(
+            @PathVariable("sessionId") long sessionId) {
         FiringSessionResponseDTO session = firingSessionService.getSessionById(sessionId);
         return ResponseEntity.ok(session);
     }
+    @GetMapping("/{sessionId}/data")
+    public ResponseEntity<SessionDataResponseDTO> getSessionData(
+            @PathVariable("sessionId") Long sessionId) {
+        log.info("Fetching full session data for session ID: {}", sessionId);
+
+        SessionDataResponseDTO sessionData = firingSessionService.getSessionDataDTO(sessionId);
+        return ResponseEntity.ok(sessionData);
+    }
 
 
+    @GetMapping("/program/{sessionId}/data")
+    public ResponseEntity<FiringProgramResponseDTO> getSessionProgramData(
+            @PathVariable("sessionId") Long sessionId) {
+        log.info("Fetching full session data for session ID: {}", sessionId);
+
+        FiringProgramResponseDTO programData = firingSessionService.getProgramDataForSession(sessionId);
+        return ResponseEntity.ok(programData);
+    }
 
 }

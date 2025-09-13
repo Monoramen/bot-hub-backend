@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15
+    ports:
+      - "5001:5432"  # Пробрасываем порт наружу для локального доступа
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-personal-bot-hub:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    networks:
+      - bot-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - database
+    networks:
+      - bot-network
+
+volumes:
+  postgres-personal-bot-hub:
+    name: postgres-personal-bot-hub-local  # уникальное имя, чтобы не конфликтовало
+
+networks:
+  bot-network:
+    name: bot-network-local  # уникальное имя сети для локального запуска
+    driver: bridge

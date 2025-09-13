@@ -25,4 +25,6 @@ public class FiringProgramHistoryEntity {
     @ElementCollection
     @CollectionTable(name = "history_firing_step", joinColumns = @JoinColumn(name = "program_id"))
     private List<FiringStep> steps = new ArrayList<>(); // ровно 5
+
+
 }

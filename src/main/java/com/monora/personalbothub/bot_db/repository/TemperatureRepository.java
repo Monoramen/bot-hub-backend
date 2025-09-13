@@ -1,6 +1,8 @@
 package com.monora.personalbothub.bot_db.repository;
 
 import com.monora.personalbothub.bot_db.entity.modbus.TemperatureEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,5 +13,10 @@ import java.util.List;
 public interface TemperatureRepository  extends JpaRepository<TemperatureEntity, Long> {
     List<TemperatureEntity> findAll();
 
-    List<TemperatureEntity> findByTimestampAfter(LocalDateTime time);
+    Page<TemperatureEntity> findAll(Pageable pageable);
+
+    // Фильтр по времени — тоже с пагинацией
+    Page<TemperatureEntity> findByTimestampAfter(LocalDateTime time, Pageable pageable);
+
+    List<TemperatureEntity> findBySessionId(long sessionId);
 }
