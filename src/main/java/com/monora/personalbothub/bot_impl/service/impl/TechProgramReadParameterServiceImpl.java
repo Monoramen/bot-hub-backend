@@ -103,6 +103,20 @@ public class TechProgramReadParameterServiceImpl implements TechProgramReadParam
         });
     }
 
+
+    @Async("modbusExecutor")
+    @Override
+    public CompletableFuture<Optional<Integer>> readCurrentPowerDevice(int unitId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                return modbusClientReader.readCurrentPower(unitId);
+            } catch (Exception e) {
+                log.error("Ошибка при чтении номера программы: {}", e.getMessage());
+                return Optional.empty();
+            }
+        });
+    }
+
     @Override
     public Optional<Double> readStoredDotParameterFromMap(Map<String, Object> parameters, String parameterName) {
         Object rawValueObj = parameters.get(parameterName);

@@ -79,7 +79,6 @@ public class FiringSessionController {
     public ResponseEntity<FiringProgramResponseDTO> getSessionProgramData(
             @PathVariable("sessionId") Long sessionId) {
         log.info("Fetching full session data for session ID: {}", sessionId);
-
         FiringProgramResponseDTO programData = firingSessionService.getProgramDataForSession(sessionId);
         return ResponseEntity.ok(programData);
     }

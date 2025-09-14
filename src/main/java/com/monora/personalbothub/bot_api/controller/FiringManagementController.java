@@ -68,4 +68,25 @@ public class FiringManagementController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(-1);
         }
     }
+
+    @GetMapping("/current-power")
+    public ResponseEntity<Integer> getCurrentPowerDevice(@RequestParam(value = "unitId", defaultValue = "16") int unitId) {
+        try {
+            CompletableFuture<Optional<Integer>> future = readService.readCurrentPowerDevice(unitId);
+            Integer programNumber = future.get()
+                    .orElseThrow(() -> new RuntimeException("Программа не найдена"));
+
+            return ResponseEntity.ok(programNumber);
+        } catch (InterruptedException | ExecutionException e) {
+            log.error("Ошибка при получении мощности устройства: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (RuntimeException e) {
+            log.error("Программа не найдена для unitId: {}", unitId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(-1);
+        }
+    }
+
+
+
+
 }

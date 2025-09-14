@@ -190,6 +190,41 @@ public class ModbusClientReader {
         return 0;
     }
 
+
+    public Optional<Integer> readCurrentPower(int unitId) {
+        RuntimeParameter powerParam = RuntimeParameter.R_OUT; // ✅ правильно — это мощность
+        log.debug("Чтение R_OUT: адрес=0x{}, unitId={}",
+                String.format("%04X", powerParam.getAddress()), unitId);
+
+        try {
+            Optional<byte[]> result = readRegisters(powerParam.getAddress(), 2, unitId);
+
+            if (result.isPresent()) {
+                byte[] registers = result.get();
+
+                log.debug("Полученные байты: [0x{}, 0x{}]",
+                        String.format("%02X", registers[0]),
+                        String.format("%02X", registers[1]));
+
+                // ✅ Правильное преобразование int16 (Big-Endian)
+                int rawValue = ((registers[0] & 0xFF) << 8) | (registers[1] & 0xFF);
+
+                // ✅ Преобразование в проценты: 0.1 ед. = 1%
+                int powerPercent = (int) Math.round(rawValue / 10.0);
+
+                log.info("Текущая мощность: {}%", powerPercent);
+                applyReadDelay();
+                return Optional.of(powerPercent);
+            } else {
+                log.warn("readRegisters вернул empty для R_OUT");
+            }
+        } catch (Exception e) {
+            log.error("Ошибка чтения R_OUT: {}", e.getMessage(), e);
+        }
+        return Optional.empty();
+    }
+
+
     public Optional<Integer> readCurrentProgram(int unitId) {
         // Используем прямое обращение к enum вместо реестра
         RuntimeParameter programParam = RuntimeParameter.R_PRG;
