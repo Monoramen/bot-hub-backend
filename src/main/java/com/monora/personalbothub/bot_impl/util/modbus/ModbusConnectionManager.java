@@ -15,12 +15,12 @@ public class ModbusConnectionManager {
     private static final int BAUD_RATE = 115200;
     private static final Duration REQUEST_TIMEOUT = Duration.ofMillis(80);
     private static final String[] PORT_DESCRIPTIONS = {
-            "USB Serial Converter", "FTDI", "CH340", "Modbus", "Converter" // Ключевые слова для поиска порта
+            "USB Serial Converter", "FTDI", "CH340", "Modbus", "Converter"
     };
     private volatile ModbusRtuClient client;
     private String selectedPortName;
 
-    public ModbusRtuClient connect() throws Exception {
+    public ModbusRtuClient connect() {
         if (client != null && client.isConnected()) {
             log.info("Клиент уже подключён к порту {}", selectedPortName);
             return client;
@@ -29,11 +29,10 @@ public class ModbusConnectionManager {
         log.info("Поиск доступного COM-порта...");
         SerialPort[] ports = SerialPort.getCommPorts();
         if (ports.length == 0) {
-            log.error("COM-порты не найдены");
-            throw new IllegalStateException("Нет доступных COM-портов");
+            log.warn("COM-порты не найдены — клиент не будет подключён");
+            return null; // Не падаем, просто возвращаем null
         }
 
-        // Перебираем доступные порты
         log.info("Доступные COM-порты:");
         SerialPort selectedPort = null;
         for (SerialPort port : ports) {
@@ -41,7 +40,6 @@ public class ModbusConnectionManager {
             String description = port.getPortDescription();
             log.info(" - {} (описание: {})", portName, description);
 
-            // Проверяем, содержит ли описание порта одно из ключевых слов
             for (String keyword : PORT_DESCRIPTIONS) {
                 if (description != null && description.toLowerCase().contains(keyword.toLowerCase())) {
                     selectedPort = port;
@@ -50,13 +48,10 @@ public class ModbusConnectionManager {
                     break;
                 }
             }
-            if (selectedPort != null) {
-                break;
-            }
+            if (selectedPort != null) break;
         }
 
         if (selectedPort == null) {
-            // Если подходящий порт не найден, можно выбрать первый доступный порт
             selectedPort = ports[0];
             selectedPortName = selectedPort.getSystemPortName();
             log.warn("Подходящий порт не найден, используется первый доступный порт: {}", selectedPortName);
@@ -82,7 +77,8 @@ public class ModbusConnectionManager {
         } catch (Exception e) {
             log.error("Ошибка подключения к порту {}: {}", selectedPortName, e.getMessage(), e);
             client = null;
-            throw e;
+            selectedPortName = null;
+            return null; // Не пробрасываем исключение — делаем отказоустойчиво
         }
     }
 
@@ -92,28 +88,36 @@ public class ModbusConnectionManager {
             try {
                 log.info("Отключение клиента от порта {}...", selectedPortName);
                 client.disconnect();
-                client = null;
-                selectedPortName = null;
             } catch (Exception e) {
                 log.error("Ошибка при отключении: {}", e.getMessage(), e);
+            } finally {
+                client = null;
+                selectedPortName = null;
             }
         }
     }
 
     public ModbusRtuClient getClient() {
-        if (client == null || !client.isConnected()) {
-            log.warn("Клиент не подключён или отключён, попытка восстановления соединения...");
-            try {
-                connect();
-            } catch (Exception e) {
-                log.error("Не удалось восстановить соединение: {}", e.getMessage(), e);
-                return null;
-            }
+        // УБРАЛИ автоматическое переподключение — оно может блокировать или падать при старте
+        if (client != null && client.isConnected()) {
+            return client;
+        } else {
+            log.debug("Клиент Modbus не подключён. Вызовите connect() вручную при необходимости.");
+            return null;
         }
-        return client;
     }
 
     public boolean isConnected() {
         return client != null && client.isConnected();
+    }
+
+    // Добавим метод для ручного переподключения, если нужно
+    public void reconnect() {
+        try {
+            disconnect();
+            connect();
+        } catch (Exception e) {
+            log.error("Не удалось переподключиться: {}", e.getMessage(), e);
+        }
     }
 }

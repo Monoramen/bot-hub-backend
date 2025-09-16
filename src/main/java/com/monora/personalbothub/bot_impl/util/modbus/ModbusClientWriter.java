@@ -9,7 +9,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-
 @Component
 @Slf4j
 public class ModbusClientWriter {
@@ -25,15 +24,31 @@ public class ModbusClientWriter {
         this.parameterRegistry = parameterRegistry;
     }
 
+    // ✅ Вспомогательный метод: ленивое получение клиента с попыткой подключения
+    private ModbusRtuClient getConnectedClient(int address) {
+        if (!connectionManager.isConnected()) {
+            log.debug("Modbus не подключён — попытка подключения перед записью по адресу 0x{}...", String.format("%04X", address));
+            connectionManager.connect();
+            if (!connectionManager.isConnected()) {
+                log.warn("Не удалось подключиться к Modbus перед записью по адресу 0x{}", String.format("%04X", address));
+                return null;
+            }
+        }
+
+        ModbusRtuClient client = (ModbusRtuClient) connectionManager.getClient();
+        if (client == null) {
+            log.error("Клиент Modbus недоступен для записи по адресу 0x{}", String.format("%04X", address));
+        }
+        return client;
+    }
 
     public boolean writeMultipleRegisters(int startAddress, int[] values, int unitId) {
-        ModbusRtuClient client = getClient(startAddress);
+        ModbusRtuClient client = getConnectedClient(startAddress); // ✅ ленивое подключение
         if (client == null) return false;
 
-        // Переводим int[] в byte[]
         ByteBuf buffer = Unpooled.buffer(values.length * 2);
         for (int v : values) {
-            buffer.writeShort(v); // big-endian
+            buffer.writeShort(v);
         }
         byte[] byteValues = new byte[buffer.readableBytes()];
         buffer.readBytes(byteValues);
@@ -61,32 +76,25 @@ public class ModbusClientWriter {
         return false;
     }
 
-
     public boolean writeInt16(int address, int value, int unitId) {
-        // Один регистр = 2 байта
         return writeMultipleRegisters(address, new int[]{value}, unitId);
     }
 
     public boolean writeInt8(int address, int value, int unitId) {
-        // Ограничим до 1 байта и тоже пишем в один регистр
         return writeMultipleRegisters(address, new int[]{value & 0xFF}, unitId);
     }
 
     public boolean writeStoredDot(int address, double value, int unitId) {
-        log.info("Подготовка к записи STORED_DOT по адресу 0x{} со значением {}",
-                String.format("%04X", address), value);
+        log.info("Подготовка к записи STORED_DOT по адресу 0x{} со значением {}", String.format("%04X", address), value);
 
         int dotPosition = findDotPosition(value);
         int scaledValue = (int) (value * Math.pow(10, dotPosition));
-
-        // Пакет: [scaledValue, dotPosition]
         int[] values = new int[]{scaledValue, dotPosition};
 
         boolean success = writeMultipleRegisters(address, values, unitId);
 
         if (success) {
-            log.info("STORED_DOT успешно записано: {} (масштабированное: {}, точка: {})",
-                    value, scaledValue, dotPosition);
+            log.info("STORED_DOT успешно записано: {} (масштабированное: {}, точка: {})", value, scaledValue, dotPosition);
         } else {
             log.error("Ошибка записи STORED_DOT по адресу 0x{}", String.format("%04X", address));
         }
@@ -95,8 +103,7 @@ public class ModbusClientWriter {
     }
 
     public boolean writeSingleCoil(int address, boolean value, int unitId) {
-
-        ModbusRtuClient client = getClient(address);
+        ModbusRtuClient client = getConnectedClient(address); // ✅ ленивое подключение
         if (client == null) {
             return false;
         }
@@ -104,7 +111,6 @@ public class ModbusClientWriter {
         WriteSingleCoilRequest request = new WriteSingleCoilRequest(address, value);
         for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
             try {
-                // Вызов синхронного метода из API
                 WriteSingleCoilResponse response = client.writeSingleCoil(unitId, request);
                 if (response != null) {
                     log.info("Успешная запись в катушку 0x{} для unitId {}", String.format("%04X", address), unitId);
@@ -121,14 +127,10 @@ public class ModbusClientWriter {
         return false;
     }
 
-
     public boolean startStopTechProgram(boolean start, int unitId) {
         log.info("Запуск/останов программы: {}, unitId: {}", start, unitId);
-
-        // Используем writeSingleCoil для записи в катушку
         return writeSingleCoil(RuntimeParameter.R_S.getAddress(), start, unitId);
     }
-
 
     public boolean selectTechProgram(int programNumber, int unitId) {
         if (programNumber < 1 || programNumber > 3) {
@@ -140,10 +142,9 @@ public class ModbusClientWriter {
         return writeSingleRegister(RuntimeParameter.R_PRG.getAddress(), programNumber, unitId);
     }
 
-
     @SneakyThrows
     public boolean writeSingleRegister(int address, int value, int unitId) {
-        ModbusRtuClient client = connectionManager.getClient();
+        ModbusRtuClient client = getConnectedClient(address); // ✅ ленивое подключение
         if (client == null) {
             log.error("Клиент Modbus не доступен, пропуск записи регистра по адресу 0x{}", String.format("%04X", address));
             return false;
@@ -152,8 +153,7 @@ public class ModbusClientWriter {
         WriteSingleRegisterRequest request = new WriteSingleRegisterRequest(address, value);
 
         for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-            WriteSingleRegisterResponse future = client.writeSingleRegister(unitId, request);
-            WriteSingleRegisterResponse response = future;
+            WriteSingleRegisterResponse response = client.writeSingleRegister(unitId, request);
             if (response != null) {
                 log.info("Успешно записан регистр 0x{} со значением {} на unitId {}", String.format("%04X", address), value, unitId);
                 return true;
@@ -165,23 +165,10 @@ public class ModbusClientWriter {
         return false;
     }
 
-
-    private ModbusRtuClient getClient(int address) {
-        ModbusRtuClient client = connectionManager.getClient();
-        if (client == null) {
-            log.error("Клиент Modbus не доступен, пропуск записи катушки по адресу 0x{}", String.format("%04X", address));
-            return null;
-        }
-        return client;
-    }
-
     private int findDotPosition(double value) {
         String text = String.format("%.6f", Math.abs(value)).replaceAll("0*$", "").replaceAll("\\.$", "");
         int dotIndex = text.indexOf('.');
-        if (dotIndex == -1) {
-            return 0;
-        }
-        return text.length() - dotIndex - 1;
+        return dotIndex == -1 ? 0 : text.length() - dotIndex - 1;
     }
 
     private void sleepBeforeRetry() {

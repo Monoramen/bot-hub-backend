@@ -26,24 +26,24 @@ public class ModbusClientReader {
         this.parameterRegistry = parameterRegistry;
     }
 
-    @PostConstruct
-    public void init() {
-        try {
-            log.info("Инициализация ModbusClient, подключение к устройству...");
-            connectionManager.connect();
-            log.info("ModbusClient успешно инициализирован");
-        } catch (Exception e) {
-            log.error("Ошибка инициализации ModbusClient: {}", e.getMessage(), e);
-        }
-    }
 
     /**
      * Чтение регистров по адресу с повторными попытками
      */
     public Optional<byte[]> readRegisters(int address, int quantity, int unitId) {
-        ModbusRtuClient client = connectionManager.getClient();
+        // ✅ Ленивая инициализация: если клиент не подключён — пробуем подключиться
+        if (!connectionManager.isConnected()) {
+            log.debug("Modbus не подключён — попытка подключения...");
+            connectionManager.connect(); // connect() теперь не бросает исключение, а возвращает null при неудаче
+            if (!connectionManager.isConnected()) {
+                log.warn("Не удалось подключиться к Modbus — пропуск чтения по адресу 0x{}", String.format("%04X", address));
+                return Optional.empty();
+            }
+        }
+
+        ModbusRtuClient client = (ModbusRtuClient) connectionManager.getClient();
         if (client == null) {
-            log.error("Клиент Modbus не доступен, пропуск чтения регистров по адресу 0x{}", String.format("%04X", address));
+            log.error("Клиент Modbus недоступен — пропуск чтения по адресу 0x{}", String.format("%04X", address));
             return Optional.empty();
         }
 
@@ -68,7 +68,6 @@ public class ModbusClientReader {
         }
         return Optional.empty();
     }
-
 
     /**
      * Чтение одного параметра в зависимости от типа данных

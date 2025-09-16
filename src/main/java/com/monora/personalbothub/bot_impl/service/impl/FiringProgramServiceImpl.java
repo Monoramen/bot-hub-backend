@@ -75,9 +75,7 @@ public class FiringProgramServiceImpl implements FiringProgramService {
     @Transactional(readOnly = true)
     public List<FiringProgramResponseDTO> findAll() {
         List<FiringProgramEntity> all = firingProgramRepository.findAll();
-        if (all.isEmpty()) {
-            throw new ApiException(ApiErrorType.NOT_FOUND, "No firing programs found");
-        }
+
         return firingProgramMapper.toResponseDTOList(all);
     }
 

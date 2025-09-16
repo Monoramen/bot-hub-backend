@@ -57,4 +57,8 @@ public class TemperatureController {
         List<TemperatureResponseDTO> temps = temperatureService.getTemperaturesBySessionId(sessionId);
         return ResponseEntity.ok(temps);
     }
+
+
+
+
 }

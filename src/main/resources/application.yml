@@ -74,3 +74,5 @@ springdoc:
     display-request-duration: true
   default-produces-media-type: application/json
   packages-to-scan: com.monora.personalbothub.bot_api.controller
+
+
