@@ -1,5 +1,5 @@
 package com.monora.personalbothub.bot_impl.util.modbus;
-
+import java.util.Arrays; 
 import com.digitalpetri.modbus.client.ModbusRtuClient;
 import com.digitalpetri.modbus.pdu.ReadHoldingRegistersRequest;
 import com.digitalpetri.modbus.pdu.ReadHoldingRegistersResponse;
@@ -8,6 +8,7 @@ import com.monora.personalbothub.bot_impl.util.modbus.enums.RuntimeParameter;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
 
 import java.nio.ByteBuffer;
 import java.util.Optional;
@@ -158,36 +159,42 @@ public class ModbusClientReader {
     /**
      * Совместимость: метод для чтения температуры
      */
-    public float readTemperature(int unitId) {
-        RuntimeParameter tempParam = parameterRegistry.getRuntimeParameter("rEAd");
-        if (tempParam == null) {
-            log.error("Параметр rEAd не найден в реестре");
-            return 0;
-        }
-        int quantity = 2;
-
-        try {
-            Optional<byte[]> result = readRegisters(RuntimeParameter.READ.getAddress(), quantity, unitId);
+        public float readTemperature(int unitId) {
+            Optional<byte[]> result = readRegisters(RuntimeParameter.READ.getAddress(), 2, unitId);
             if (result.isPresent()) {
                 byte[] registers = result.get();
-                byte[] swapped = new byte[4];
-                swapped[0] = registers[2];
-                swapped[1] = registers[3];
-                swapped[2] = registers[0];
-                swapped[3] = registers[1];
+                
+                // Расширенное логирование
+                log.debug("Байты температуры: [0x{}, 0x{}, 0x{}, 0x{}]", 
+                    String.format("%02X", registers[0]),
+                    String.format("%02X", registers[1]),
+                    String.format("%02X", registers[2]),
+                    String.format("%02X", registers[3])
+                );
 
-                float value = FloatUtils.byteArrayToFloat(swapped);
-                log.info("Температура: {} °C", value);
-                applyReadDelay();
-                return value;
-            } else {
-                log.warn("Не удалось прочитать значение для unitId {}", unitId);
+                // Варианты преобразования с объяснением
+                float[] variants = {
+                    FloatUtils.byteArrayToFloat(new byte[]{registers[0], registers[1], registers[2], registers[3]}),  // Прямой порядок
+                    FloatUtils.byteArrayToFloat(new byte[]{registers[2], registers[3], registers[0], registers[1]}),  // Перекрестный
+                    FloatUtils.byteArrayToFloat(new byte[]{registers[1], registers[0], registers[3], registers[2]})   // Обратный
+                };
+
+                // Фильтрация адекватных значений с помощью цикла
+                float validTemperature = 0f;
+                for (float temp : variants) {
+                    if (temp > 0 && temp < 1300) {
+                        validTemperature = temp;
+                        break;
+                    }
+                }
+
+                log.info("Варианты температуры: {}, {}, {}, выбрано: {}", 
+                    variants[0], variants[1], variants[2], validTemperature);
+
+                return validTemperature;
             }
-        } catch (Exception e) {
-            log.error("Ошибка чтения параметра rEAd: {}", e.getMessage());
+            return 0;
         }
-        return 0;
-    }
 
 
     public Optional<Integer> readCurrentPower(int unitId) {
