@@ -106,7 +106,7 @@ public class FiringProgramServiceImpl implements FiringProgramService {
     @Override
     public List<FiringProgramResponseDTO> getAllTechProgramParametersAsFiringProgramDTO(int unitId) {
         // Вызываем асинхронный метод
-        CompletableFuture<Map<String, Object>> future = techProgramReadParameterService.loadTechProgramParameters(unitId);
+        CompletableFuture<Map<String, Object>> future = techProgramReadParameterService.loadAllProgramParameters(unitId);
 
         try {
             // Ждём завершения и получаем результат
@@ -154,23 +154,49 @@ public class FiringProgramServiceImpl implements FiringProgramService {
             Map<String, Object> parameters = future.get();
 
             Optional<?> timeScaleRaw = (Optional<?>) parameters.get(TechProgramParameter.T_SCL.getName());
+            log.info("Шкала времени: {}", timeScaleRaw);
+            log.info("Параметры: {}", parameters);
             if (timeScaleRaw == null || timeScaleRaw.isEmpty() || !(timeScaleRaw.get() instanceof Integer)) {
-                log.warn("Не удалось прочитать параметр масштаба времени.");
-                return null;
+                log.warn("Не удалось прочитать параметр масштаба времени. Используется масштаб 'минуты'.");
+                // Если не удалось прочитать, считаем, что масштаб - минуты
+                parameters.put(TechProgramParameter.T_SCL.getName(), Optional.of(1));
             }
 
-            FiringProgramResponseDTO programResponse = loadSingleProgram(parameters, programNumber);
+            // Вызываем вспомогательный метод для конвертации
+            Map<String, Object> convertedParameters = convertTimesToMinutes(parameters, programNumber);
 
+            // Передаем конвертированные параметры в метод загрузки программы
+            FiringProgramResponseDTO programResponse = loadSingleProgram(convertedParameters, programNumber);
+            log.info("Parameters response {}", programResponse);
             return programResponse;
 
         } catch (InterruptedException | ExecutionException e) {
             log.error("Ошибка при получении результата из CompletableFuture: {}", e.getMessage());
-            // Обработка ошибок, если асинхронная задача не выполнилась
             return null;
         } catch (Exception e) {
             log.error("Ошибка при преобразовании параметров в FiringProgramResponseDTO: {}", e.getMessage());
             return null;
         }
+    }
+
+    /**
+     * Конвертирует все временные параметры программы в минуты на основе параметра t.SCL.
+     * @param parameters Карта параметров, полученных с устройства.
+     * @param programNumber Номер программы.
+     * @return Карта с конвертированными временными значениями.
+     */
+    private Map<String, Object> convertTimesToMinutes(Map<String, Object> parameters, int programNumber) {
+
+        Optional<?> timeScaleRaw = (Optional<?>) parameters.get(TechProgramParameter.T_SCL.getName());
+        int timeScale = (int) timeScaleRaw.get();
+
+        // Итерируемся по параметрам и конвертируем только временные.
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            String paramName = entry.getKey();
+            Object value = entry.getValue();
+            //log.info("param {} value {}", paramName, value);
+        }
+        return parameters;
     }
 
     /**

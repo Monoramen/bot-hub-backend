@@ -37,7 +37,7 @@ public class TechProgramReadParameterServiceImpl implements TechProgramReadParam
 
     @Async("modbusExecutor")
     @Override
-    public CompletableFuture<Map<String, Object>> loadTechProgramParameters(int unitId) {
+    public CompletableFuture<Map<String, Object>> loadAllProgramParameters(int unitId) {
         Map<String, Object> results = new HashMap<>();
         for (TechProgramParameter param : TechProgramParameter.values()) {
             Optional<Object> value = readParameterInternal(unitId, param);
@@ -53,8 +53,6 @@ public class TechProgramReadParameterServiceImpl implements TechProgramReadParam
     @Async("modbusExecutor")
     @Override
     public CompletableFuture<Map<String, Object>> loadProgramParameters(int programNumber, int unitId) {
-        Map<String, Map<String, Object>> categorizedParameters = new HashMap<>();
-
         // Создаем префикс для фильтрации (например, "P1.")
         String prefix = "P" + programNumber + ".";
 
