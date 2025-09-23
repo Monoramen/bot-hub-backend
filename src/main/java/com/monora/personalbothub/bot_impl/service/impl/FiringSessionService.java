@@ -1,5 +1,9 @@
 package com.monora.personalbothub.bot_impl.service.impl;
-import com.monora.personalbothub.bot_api.dto.response.*;
+
+import com.monora.personalbothub.bot_api.dto.response.FiringProgramResponseDTO;
+import com.monora.personalbothub.bot_api.dto.response.FiringSessionResponseDTO;
+import com.monora.personalbothub.bot_api.dto.response.SessionDataResponseDTO;
+import com.monora.personalbothub.bot_api.dto.response.TemperatureResponseDTO;
 import com.monora.personalbothub.bot_api.exception.ApiErrorType;
 import com.monora.personalbothub.bot_api.exception.ApiException;
 import com.monora.personalbothub.bot_db.entity.modbus.FiringProgramHistoryEntity;
@@ -11,17 +15,16 @@ import com.monora.personalbothub.bot_impl.mapper.FiringProgramMapper;
 import com.monora.personalbothub.bot_impl.mapper.FiringSessionMapper;
 import com.monora.personalbothub.bot_impl.service.FiringProgramService;
 import com.monora.personalbothub.bot_impl.service.TechProgramReadParameterService;
-import com.monora.personalbothub.bot_impl.service.TechProgramWriteParameterService;
 import com.monora.personalbothub.bot_impl.util.modbus.enums.FiringStatus;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -39,8 +42,10 @@ public class FiringSessionService {
     private final FiringSessionMapper firingSessionMapper;
     private final FiringProgramMapper firingProgramMapper;
     private final TemperatureService temperatureService;
+
     /**
      * Создает и сохраняет новый сеанс обжига.
+     *
      * @param programNumber Программа обжига, которая будет выполняться.
      * @return Созданный объект FiringSessionEntity.
      */
@@ -93,7 +98,13 @@ public class FiringSessionService {
                 });
     }
 
+    @Transactional
+    public void deleteSessionById(@PathVariable("id") Long sessionId) {
+        FiringSessionEntity entity = firingSessionRepository.findById(sessionId)
+                .orElseThrow(() -> new ApiException(ApiErrorType.NOT_FOUND, "Firing session not found"));
+        firingSessionRepository.delete(entity);
 
+    }
 
     @Scheduled(fixedRate = 60 * 1000) // каждую минуту
     @Transactional
@@ -219,9 +230,10 @@ public class FiringSessionService {
                 latestTemp
         );
     }
+
     @Transactional(readOnly = true)
     public FiringProgramResponseDTO getProgramDataForSession(Long sessionId) {
-        FiringProgramHistoryEntity program  = firingProgramHistoryRepository.findBySessionId(sessionId)
+        FiringProgramHistoryEntity program = firingProgramHistoryRepository.findBySessionId(sessionId)
                 .orElseThrow(() -> new ApiException(ApiErrorType.NOT_FOUND, "Session not found: " + sessionId));
         return firingProgramMapper.toResponseHistoryDTO(program);
     }

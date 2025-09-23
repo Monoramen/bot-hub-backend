@@ -3,9 +3,6 @@ package com.monora.personalbothub.bot_api.controller;
 import com.monora.personalbothub.bot_api.dto.response.FiringProgramResponseDTO;
 import com.monora.personalbothub.bot_api.dto.response.FiringSessionResponseDTO;
 import com.monora.personalbothub.bot_api.dto.response.SessionDataResponseDTO;
-import com.monora.personalbothub.bot_db.entity.modbus.FiringProgramHistoryEntity;
-import com.monora.personalbothub.bot_db.repository.FiringProgramHistoryRepository;
-import com.monora.personalbothub.bot_impl.service.FiringProgramService;
 import com.monora.personalbothub.bot_impl.service.impl.FiringSessionService;
 import com.monora.personalbothub.bot_impl.service.impl.TemperatureService;
 import lombok.AllArgsConstructor;
@@ -65,6 +62,7 @@ public class FiringSessionController {
         FiringSessionResponseDTO session = firingSessionService.getSessionById(sessionId);
         return ResponseEntity.ok(session);
     }
+
     @GetMapping("/{sessionId}/data")
     public ResponseEntity<SessionDataResponseDTO> getSessionData(
             @PathVariable("sessionId") Long sessionId) {
@@ -74,6 +72,12 @@ public class FiringSessionController {
         return ResponseEntity.ok(sessionData);
     }
 
+    @DeleteMapping("{sessionId}")
+    public ResponseEntity<Void> deleteSessionById(@PathVariable("sessionId") Long sessionId) {
+        firingSessionService.deleteSessionById(sessionId);
+        log.info("Received request to delete firing session program with ID: {}", sessionId);
+        return ResponseEntity.ok().build();
+    }
 
     @GetMapping("/program/{sessionId}/data")
     public ResponseEntity<FiringProgramResponseDTO> getSessionProgramData(
